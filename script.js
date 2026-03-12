@@ -33,6 +33,7 @@ const getBaseSiteData = () => {
 };
 
 let siteData = getBaseSiteData();
+let effectiveRuntimeConfig = { ...runtimeConfig };
 
 const setText = (selector, value) => {
   const element = document.querySelector(selector);
@@ -358,7 +359,7 @@ const updateContactStatus = (message, state = "") => {
 const initializeTurnstile = async () => {
   const container = document.querySelector("#turnstile-container");
   const note = document.querySelector("#contact-form-note");
-  const siteKey = runtimeConfig.turnstileSiteKey;
+  const siteKey = effectiveRuntimeConfig.turnstileSiteKey;
 
   if (!container || !note) {
     return;
@@ -411,7 +412,7 @@ const initializeContactForm = () => {
       return;
     }
 
-    if (!runtimeConfig.contactEndpoint) {
+    if (!effectiveRuntimeConfig.contactEndpoint) {
       updateContactStatus("문의 전송 엔드포인트가 설정되지 않았습니다.", "is-error");
       return;
     }
@@ -440,7 +441,7 @@ const initializeContactForm = () => {
     };
 
     try {
-      const response = await fetch(runtimeConfig.contactEndpoint, {
+      const response = await fetch(effectiveRuntimeConfig.contactEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -485,12 +486,12 @@ const renderPage = () => {
 };
 
 const hydrateSiteDataFromServer = async () => {
-  if (isLocalFile || !runtimeConfig.siteDataEndpoint || !window.fetch) {
+  if (isLocalFile || !effectiveRuntimeConfig.siteDataEndpoint || !window.fetch) {
     return;
   }
 
   try {
-    const response = await fetch(runtimeConfig.siteDataEndpoint, {
+    const response = await fetch(effectiveRuntimeConfig.siteDataEndpoint, {
       headers: {
         Accept: "application/json",
       },
@@ -514,7 +515,35 @@ const hydrateSiteDataFromServer = async () => {
   }
 };
 
+const hydrateRuntimeConfig = async () => {
+  if (isLocalFile || !runtimeConfig.runtimeConfigEndpoint || !window.fetch) {
+    return;
+  }
+
+  try {
+    const response = await fetch(runtimeConfig.runtimeConfigEndpoint, {
+      headers: {
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return;
+    }
+
+    const result = await response.json();
+    effectiveRuntimeConfig = {
+      ...runtimeConfig,
+      ...(result?.data || {}),
+    };
+  } catch (error) {
+    // Keep static runtime config when remote config loading fails.
+  }
+};
+
 const initialize = async () => {
+  await hydrateRuntimeConfig();
   await hydrateSiteDataFromServer();
   renderPage();
   initializeContactForm();

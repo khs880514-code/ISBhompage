@@ -131,11 +131,8 @@
 - `RESEND_API_KEY`
 - `CONTACT_TO_EMAIL`
 - `CONTACT_FROM_EMAIL`
+- `TURNSTILE_SITE_KEY`
 - `TURNSTILE_SECRET_KEY`
-
-#### 프론트 설정
-
-- [site-config.js](../site-config.js) 에 `turnstileSiteKey` 입력
 
 #### 완료 기준
 
@@ -229,8 +226,6 @@
 
 ## 이 프로젝트에서 먼저 수정해야 하는 파일
 
-- [site-config.js](../site-config.js)
-  - `turnstileSiteKey`
 - [site-data.js](../site-data.js)
   - 초기 브랜드/프로젝트 데이터
 - [.env.example](../.env.example)

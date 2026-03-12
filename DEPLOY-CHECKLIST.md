@@ -21,6 +21,7 @@ Netlify Site settings -> Environment variables 에 아래 값을 넣습니다.
 - `RESEND_API_KEY`
 - `CONTACT_TO_EMAIL`
 - `CONTACT_FROM_EMAIL`
+- `TURNSTILE_SITE_KEY`
 - `TURNSTILE_SECRET_KEY`
 
 값 형식은 [.env.example](./.env.example) 를 참고하면 됩니다.
@@ -28,7 +29,7 @@ Netlify Site settings -> Environment variables 에 아래 값을 넣습니다.
 ## 4. Cloudflare Turnstile
 
 1. Cloudflare Turnstile에서 사이트를 등록합니다.
-2. 발급받은 `Site Key` 는 [site-config.js](./site-config.js) 의 `turnstileSiteKey` 에 넣습니다.
+2. 발급받은 `Site Key` 는 Netlify 환경변수 `TURNSTILE_SITE_KEY` 로 넣습니다.
 3. 발급받은 `Secret Key` 는 Netlify 환경변수 `TURNSTILE_SECRET_KEY` 로 넣습니다.
 
 ## 5. Resend
