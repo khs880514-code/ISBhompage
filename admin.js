@@ -1,0 +1,809 @@
+const storage = window.siteStorage;
+const runtimeConfig = window.siteRuntimeConfig || {};
+const isLocalFile = window.location.protocol === "file:";
+
+const statusText = document.querySelector("#status-text");
+const statusDetail = document.querySelector("#status-detail");
+const draftSaveButton = document.querySelector("#draft-save-button");
+const publishButton = document.querySelector("#publish-button");
+const exportButton = document.querySelector("#export-button");
+const importButton = document.querySelector("#import-button");
+const importFile = document.querySelector("#import-file");
+const resetButton = document.querySelector("#reset-button");
+const adminTokenInput = document.querySelector("#admin-token");
+
+let state = storage ? storage.loadSiteData() : window.defaultSiteData || {};
+
+const sessionTokenKey = "isb-admin-token";
+
+if (adminTokenInput) {
+  adminTokenInput.value = window.sessionStorage.getItem(sessionTokenKey) || "";
+  adminTokenInput.addEventListener("input", (event) => {
+    window.sessionStorage.setItem(sessionTokenKey, event.target.value);
+  });
+}
+
+const defaultFeaturedProject = () => ({
+  label: "Featured Case",
+  chipIndex: String((state.featuredProjects?.length || 0) + 1).padStart(2, "0"),
+  chipTitle: "새 대표 사례",
+  chipSubtitle: "행사장 / 시스템",
+  title: "대표 시공 사례 제목",
+  meta: "카테고리 / 장소 / 시스템",
+  summary: "대표 사례 설명을 입력하세요.",
+  tags: ["New Project", "ISB"],
+  image: "",
+  link: "",
+});
+
+const defaultAboutValue = () => ({
+  title: "새 강점",
+  description: "강점 설명을 입력하세요.",
+});
+
+const defaultSolution = () => ({
+  index: String((state.solutions?.length || 0) + 1).padStart(2, "0"),
+  title: "새 서비스",
+  description: "서비스 설명을 입력하세요.",
+});
+
+const defaultProject = () => ({
+  category: "프로젝트 분류",
+  title: "프로젝트명",
+  description: "프로젝트 설명을 입력하세요.",
+  link: "",
+});
+
+const defaultSupportItem = () => ({
+  title: "새 지원 카드",
+  description: "지원 카드 설명을 입력하세요.",
+});
+
+const setStatus = (title, detail) => {
+  if (statusText) {
+    statusText.textContent = title;
+  }
+
+  if (statusDetail) {
+    statusDetail.textContent = detail;
+  }
+};
+
+const markDirty = () => {
+  setStatus("수정 중", "브라우저 저장 또는 사이트 반영을 진행하세요.");
+};
+
+const markDraftSaved = () => {
+  setStatus("브라우저 저장 완료", "현재 브라우저에 임시 저장했습니다. 사이트 반영은 별도 버튼으로 진행하세요.");
+};
+
+const markPublished = () => {
+  setStatus("사이트 반영 완료", "배포된 사이트 데이터에 저장했습니다. 홈페이지를 새로고침해 확인하세요.");
+};
+
+const createField = ({ label, value, type = "text", full = false, onChange, help }) => {
+  const wrapper = document.createElement("div");
+  wrapper.className = `field${full ? " full" : ""}`;
+
+  const labelElement = document.createElement("label");
+  labelElement.textContent = label;
+  wrapper.appendChild(labelElement);
+
+  let input;
+
+  if (type === "textarea") {
+    input = document.createElement("textarea");
+    input.value = value || "";
+  } else {
+    input = document.createElement("input");
+    input.type = type === "tags" ? "text" : type;
+    input.value = value || "";
+  }
+
+  input.addEventListener("input", (event) => {
+    onChange(event.target.value);
+    markDirty();
+  });
+
+  wrapper.appendChild(input);
+
+  if (help) {
+    const helpElement = document.createElement("div");
+    helpElement.className = "form-help";
+    helpElement.textContent = help;
+    wrapper.appendChild(helpElement);
+  }
+
+  return wrapper;
+};
+
+const createImageField = ({ label, value, onChange }) => {
+  const wrapper = document.createElement("div");
+  wrapper.className = "field full";
+
+  const labelElement = document.createElement("label");
+  labelElement.textContent = label;
+  wrapper.appendChild(labelElement);
+
+  const urlInput = document.createElement("input");
+  urlInput.type = "text";
+  urlInput.value = value || "";
+  urlInput.placeholder = "이미지 URL 또는 업로드된 데이터";
+  wrapper.appendChild(urlInput);
+
+  const preview = document.createElement("div");
+  preview.className = "image-preview";
+  const previewImage = document.createElement("img");
+  previewImage.alt = label;
+  previewImage.src = value || "";
+  preview.appendChild(previewImage);
+
+  urlInput.addEventListener("input", (event) => {
+    onChange(event.target.value);
+    previewImage.src = event.target.value;
+    markDirty();
+  });
+
+  const tools = document.createElement("div");
+  tools.className = "image-tools";
+
+  const uploadButton = document.createElement("label");
+  uploadButton.className = "admin-button ghost upload-button";
+  uploadButton.textContent = "컴퓨터에서 이미지 올리기";
+
+  const uploadInput = document.createElement("input");
+  uploadInput.type = "file";
+  uploadInput.accept = "image/*";
+  uploadInput.addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      urlInput.value = result;
+      onChange(result);
+      previewImage.src = result;
+      markDirty();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  uploadButton.appendChild(uploadInput);
+  tools.appendChild(uploadButton);
+
+  const clearButton = document.createElement("button");
+  clearButton.type = "button";
+  clearButton.className = "admin-button ghost";
+  clearButton.textContent = "이미지 비우기";
+  clearButton.addEventListener("click", () => {
+    urlInput.value = "";
+    onChange("");
+    previewImage.src = "";
+    markDirty();
+  });
+  tools.appendChild(clearButton);
+
+  wrapper.appendChild(tools);
+  wrapper.appendChild(preview);
+
+  return wrapper;
+};
+
+const renderSimpleFields = (containerSelector, fields) => {
+  const container = document.querySelector(containerSelector);
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = "";
+  fields.forEach((field) => container.appendChild(createField(field)));
+};
+
+const createItemCard = ({ title, subtitle, onMoveUp, onMoveDown, onDelete }) => {
+  const card = document.createElement("article");
+  card.className = "item-card";
+
+  const head = document.createElement("div");
+  head.className = "item-card-head";
+
+  const titleWrap = document.createElement("div");
+  const strong = document.createElement("strong");
+  strong.textContent = title;
+  titleWrap.appendChild(strong);
+
+  if (subtitle) {
+    const hint = document.createElement("div");
+    hint.className = "hint";
+    hint.textContent = subtitle;
+    titleWrap.appendChild(hint);
+  }
+
+  const actions = document.createElement("div");
+  actions.className = "item-card-actions";
+
+  [
+    { text: "↑", onClick: onMoveUp },
+    { text: "↓", onClick: onMoveDown },
+    { text: "삭제", onClick: onDelete, danger: true },
+  ].forEach((action) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `mini-button${action.danger ? " danger" : ""}`;
+    button.textContent = action.text;
+    button.addEventListener("click", action.onClick);
+    actions.appendChild(button);
+  });
+
+  head.appendChild(titleWrap);
+  head.appendChild(actions);
+  card.appendChild(head);
+  return card;
+};
+
+const swapItems = (list, first, second) => {
+  if (!list || first < 0 || second < 0 || first >= list.length || second >= list.length) {
+    return;
+  }
+
+  [list[first], list[second]] = [list[second], list[first]];
+  markDirty();
+};
+
+const createTextFieldsForItem = (card, item, fields) => {
+  const grid = document.createElement("div");
+  grid.className = "form-grid";
+
+  fields.forEach((field) => {
+    if (field.type === "image") {
+      grid.appendChild(
+        createImageField({
+          label: field.label,
+          value: item[field.key],
+          onChange: (value) => {
+            item[field.key] = value;
+          },
+        }),
+      );
+      return;
+    }
+
+    grid.appendChild(
+      createField({
+        label: field.label,
+        type: field.type,
+        full: field.full,
+        value: field.type === "tags" ? (item[field.key] || []).join(", ") : item[field.key],
+        onChange: (value) => {
+          item[field.key] =
+            field.type === "tags"
+              ? value
+                  .split(",")
+                  .map((token) => token.trim())
+                  .filter(Boolean)
+              : value;
+        },
+        help: field.help,
+      }),
+    );
+  });
+
+  card.appendChild(grid);
+};
+
+const renderFeaturedProjects = () => {
+  const container = document.querySelector("#featured-list");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = "";
+
+  state.featuredProjects.forEach((project, index) => {
+    const card = createItemCard({
+      title: project.chipTitle || `대표 사례 ${index + 1}`,
+      subtitle: project.chipSubtitle || project.meta || "",
+      onMoveUp: () => {
+        swapItems(state.featuredProjects, index, index - 1);
+        renderAll();
+      },
+      onMoveDown: () => {
+        swapItems(state.featuredProjects, index, index + 1);
+        renderAll();
+      },
+      onDelete: () => {
+        state.featuredProjects.splice(index, 1);
+        markDirty();
+        renderAll();
+      },
+    });
+
+    createTextFieldsForItem(card, project, [
+      { key: "chipIndex", label: "번호" },
+      { key: "label", label: "상단 라벨" },
+      { key: "chipTitle", label: "카드 제목" },
+      { key: "chipSubtitle", label: "카드 부제", full: true },
+      { key: "title", label: "상세 제목", full: true },
+      { key: "meta", label: "메타 정보", full: true },
+      { key: "summary", label: "요약 설명", type: "textarea", full: true },
+      {
+        key: "tags",
+        label: "태그",
+        type: "tags",
+        full: true,
+        help: "쉼표로 구분합니다. 예: Truss Rigging, G-TLD, KINTEX",
+      },
+      { key: "image", label: "대표 이미지", type: "image", full: true },
+      { key: "link", label: "관련 링크", full: true },
+    ]);
+
+    container.appendChild(card);
+  });
+};
+
+const renderAboutValues = () => {
+  const container = document.querySelector("#about-values-list");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = "";
+
+  state.about.values.forEach((item, index) => {
+    const card = createItemCard({
+      title: item.title || `강점 ${index + 1}`,
+      onMoveUp: () => {
+        swapItems(state.about.values, index, index - 1);
+        renderAll();
+      },
+      onMoveDown: () => {
+        swapItems(state.about.values, index, index + 1);
+        renderAll();
+      },
+      onDelete: () => {
+        state.about.values.splice(index, 1);
+        markDirty();
+        renderAll();
+      },
+    });
+
+    createTextFieldsForItem(card, item, [
+      { key: "title", label: "제목" },
+      { key: "description", label: "설명", type: "textarea", full: true },
+    ]);
+
+    container.appendChild(card);
+  });
+};
+
+const renderSolutions = () => {
+  const container = document.querySelector("#solutions-list-admin");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = "";
+
+  state.solutions.forEach((item, index) => {
+    const card = createItemCard({
+      title: item.title || `서비스 ${index + 1}`,
+      subtitle: item.index || "",
+      onMoveUp: () => {
+        swapItems(state.solutions, index, index - 1);
+        renderAll();
+      },
+      onMoveDown: () => {
+        swapItems(state.solutions, index, index + 1);
+        renderAll();
+      },
+      onDelete: () => {
+        state.solutions.splice(index, 1);
+        markDirty();
+        renderAll();
+      },
+    });
+
+    createTextFieldsForItem(card, item, [
+      { key: "index", label: "번호" },
+      { key: "title", label: "제목" },
+      { key: "description", label: "설명", type: "textarea", full: true },
+    ]);
+
+    container.appendChild(card);
+  });
+};
+
+const renderProjects = () => {
+  const container = document.querySelector("#projects-list-admin");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = "";
+
+  state.projects.forEach((item, index) => {
+    const card = createItemCard({
+      title: item.title || `프로젝트 ${index + 1}`,
+      subtitle: item.category || "",
+      onMoveUp: () => {
+        swapItems(state.projects, index, index - 1);
+        renderAll();
+      },
+      onMoveDown: () => {
+        swapItems(state.projects, index, index + 1);
+        renderAll();
+      },
+      onDelete: () => {
+        state.projects.splice(index, 1);
+        markDirty();
+        renderAll();
+      },
+    });
+
+    createTextFieldsForItem(card, item, [
+      { key: "category", label: "카테고리" },
+      { key: "title", label: "제목" },
+      { key: "description", label: "설명", type: "textarea", full: true },
+      { key: "link", label: "관련 링크", full: true },
+    ]);
+
+    container.appendChild(card);
+  });
+};
+
+const renderSupportItems = () => {
+  const container = document.querySelector("#support-items-list");
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = "";
+
+  state.support.items.forEach((item, index) => {
+    const card = createItemCard({
+      title: item.title || `지원 카드 ${index + 1}`,
+      onMoveUp: () => {
+        swapItems(state.support.items, index, index - 1);
+        renderAll();
+      },
+      onMoveDown: () => {
+        swapItems(state.support.items, index, index + 1);
+        renderAll();
+      },
+      onDelete: () => {
+        state.support.items.splice(index, 1);
+        markDirty();
+        renderAll();
+      },
+    });
+
+    createTextFieldsForItem(card, item, [
+      { key: "title", label: "제목" },
+      { key: "description", label: "설명", type: "textarea", full: true },
+    ]);
+
+    container.appendChild(card);
+  });
+};
+
+const renderTopFields = () => {
+  renderSimpleFields("#brand-fields", [
+    {
+      label: "브랜드명",
+      value: state.brand.main,
+      onChange: (value) => {
+        state.brand.main = value;
+      },
+    },
+    {
+      label: "슬로건",
+      value: state.brand.sub,
+      onChange: (value) => {
+        state.brand.sub = value;
+      },
+    },
+    {
+      label: "회사명",
+      value: state.brand.companyName,
+      onChange: (value) => {
+        state.brand.companyName = value;
+      },
+    },
+    {
+      label: "전화번호",
+      value: state.brand.phone,
+      onChange: (value) => {
+        state.brand.phone = value;
+      },
+    },
+    {
+      label: "이메일",
+      value: state.brand.email,
+      onChange: (value) => {
+        state.brand.email = value;
+      },
+    },
+    {
+      label: "웹사이트",
+      value: state.brand.website,
+      onChange: (value) => {
+        state.brand.website = value;
+      },
+    },
+    {
+      label: "블로그 링크",
+      value: state.brand.blog,
+      onChange: (value) => {
+        state.brand.blog = value;
+      },
+      full: true,
+    },
+    {
+      label: "회사 소개 짧은 설명",
+      value: state.brand.companyIntro,
+      type: "textarea",
+      full: true,
+      onChange: (value) => {
+        state.brand.companyIntro = value;
+      },
+    },
+  ]);
+
+  renderSimpleFields("#hero-fields", [
+    {
+      label: "상단 영문 라벨",
+      value: state.hero.eyebrow,
+      onChange: (value) => {
+        state.hero.eyebrow = value;
+      },
+    },
+    {
+      label: "메인 제목",
+      value: state.hero.title,
+      type: "textarea",
+      full: true,
+      onChange: (value) => {
+        state.hero.title = value;
+      },
+    },
+    {
+      label: "메인 설명",
+      value: state.hero.description,
+      type: "textarea",
+      full: true,
+      onChange: (value) => {
+        state.hero.description = value;
+      },
+    },
+  ]);
+
+  renderSimpleFields("#about-fields", [
+    {
+      label: "About 제목",
+      value: state.about.title,
+      onChange: (value) => {
+        state.about.title = value;
+      },
+      full: true,
+    },
+    {
+      label: "About 설명",
+      value: state.about.description,
+      type: "textarea",
+      full: true,
+      onChange: (value) => {
+        state.about.description = value;
+      },
+    },
+  ]);
+
+  renderSimpleFields("#intro-fields", [
+    {
+      label: "중간 소개 문구",
+      value: state.introBand,
+      type: "textarea",
+      full: true,
+      onChange: (value) => {
+        state.introBand = value;
+      },
+    },
+  ]);
+
+  renderSimpleFields("#support-fields", [
+    {
+      label: "Support 제목",
+      value: state.support.title,
+      onChange: (value) => {
+        state.support.title = value;
+      },
+      full: true,
+    },
+    {
+      label: "Support 설명",
+      value: state.support.description,
+      type: "textarea",
+      full: true,
+      onChange: (value) => {
+        state.support.description = value;
+      },
+    },
+  ]);
+};
+
+const renderAll = () => {
+  renderTopFields();
+  renderFeaturedProjects();
+  renderAboutValues();
+  renderSolutions();
+  renderProjects();
+  renderSupportItems();
+};
+
+const saveDraftLocally = () => {
+  if (!storage) {
+    setStatus("저장 불가", "이 브라우저에서는 로컬 저장을 사용할 수 없습니다.");
+    return;
+  }
+
+  storage.saveSiteData(state);
+  markDraftSaved();
+};
+
+const loadPublishedData = async () => {
+  if (isLocalFile || !runtimeConfig.siteDataEndpoint || !window.fetch) {
+    if (isLocalFile) {
+      setStatus("로컬 편집 모드", "로컬 파일에서는 브라우저 저장과 JSON 백업 위주로 사용하세요.");
+    }
+    return;
+  }
+
+  try {
+    const response = await fetch(runtimeConfig.siteDataEndpoint, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return;
+    }
+
+    const result = await response.json();
+    const remoteData = result?.data || result;
+    state = storage ? storage.mergeData(storage.getDefaultData(), remoteData) : remoteData;
+    renderAll();
+    setStatus("사이트 데이터 로드 완료", "현재 배포된 데이터를 불러왔습니다. 수정 후 사이트 반영을 진행할 수 있습니다.");
+  } catch (error) {
+    setStatus("원격 데이터 로드 실패", "기본 데이터로 편집 중입니다. 네트워크 또는 함수 배포 상태를 확인해주세요.");
+  }
+};
+
+const publishToSite = async () => {
+  if (isLocalFile || !runtimeConfig.adminPublishEndpoint) {
+    setStatus("사이트 반영 불가", "배포된 환경에서만 사이트 반영이 가능합니다.");
+    return;
+  }
+
+  const adminToken = adminTokenInput?.value?.trim();
+  if (!adminToken) {
+    setStatus("관리 토큰 필요", "사이트 반영을 위해 관리자 토큰을 입력해주세요.");
+    return;
+  }
+
+  publishButton.disabled = true;
+  setStatus("사이트 반영 중", "서버 저장소에 데이터를 업로드하고 있습니다.");
+
+  try {
+    const response = await fetch(runtimeConfig.adminPublishEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-token": adminToken,
+      },
+      body: JSON.stringify({ data: state }),
+    });
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(result.message || "사이트 반영에 실패했습니다.");
+    }
+
+    storage?.saveSiteData(state);
+    markPublished();
+  } catch (error) {
+    setStatus("사이트 반영 실패", error.message || "관리 토큰 또는 서버 설정을 확인해주세요.");
+  } finally {
+    publishButton.disabled = false;
+  }
+};
+
+document.querySelector("#add-featured-button")?.addEventListener("click", () => {
+  state.featuredProjects.push(defaultFeaturedProject());
+  markDirty();
+  renderAll();
+});
+
+document.querySelector("#add-about-value-button")?.addEventListener("click", () => {
+  state.about.values.push(defaultAboutValue());
+  markDirty();
+  renderAll();
+});
+
+document.querySelector("#add-solution-button")?.addEventListener("click", () => {
+  state.solutions.push(defaultSolution());
+  markDirty();
+  renderAll();
+});
+
+document.querySelector("#add-project-button")?.addEventListener("click", () => {
+  state.projects.push(defaultProject());
+  markDirty();
+  renderAll();
+});
+
+document.querySelector("#add-support-item-button")?.addEventListener("click", () => {
+  state.support.items.push(defaultSupportItem());
+  markDirty();
+  renderAll();
+});
+
+draftSaveButton?.addEventListener("click", saveDraftLocally);
+publishButton?.addEventListener("click", publishToSite);
+
+resetButton?.addEventListener("click", () => {
+  const ok = window.confirm("로컬 저장된 수정 내용과 현재 편집값을 초기값으로 되돌릴까요?");
+  if (!ok) {
+    return;
+  }
+
+  storage?.resetSiteData();
+  state = storage ? storage.getDefaultData() : window.defaultSiteData || {};
+  renderAll();
+  setStatus("초기값 복원", "기본 데이터로 되돌렸습니다. 필요하면 사이트 반영을 다시 진행하세요.");
+});
+
+exportButton?.addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "isb-site-data.json";
+  anchor.click();
+  URL.revokeObjectURL(url);
+  setStatus("내보내기 완료", "현재 편집 데이터를 JSON 파일로 저장했습니다.");
+});
+
+importButton?.addEventListener("click", () => importFile?.click());
+
+importFile?.addEventListener("change", async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) {
+    return;
+  }
+
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    state = storage ? storage.mergeData(storage.getDefaultData(), parsed) : parsed;
+    renderAll();
+    markDirty();
+    setStatus("가져오기 완료", "불러온 데이터를 검토한 뒤 브라우저 저장 또는 사이트 반영을 진행하세요.");
+  } catch (error) {
+    setStatus("가져오기 실패", "JSON 형식이 올바른지 확인해주세요.");
+  }
+
+  event.target.value = "";
+});
+
+window.addEventListener("keydown", (event) => {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+    event.preventDefault();
+    saveDraftLocally();
+  }
+});
+
+renderAll();
+loadPublishedData();

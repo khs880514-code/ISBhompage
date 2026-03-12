@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ISB Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body class="admin-body">
+    <div class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <p class="admin-eyebrow">ISB Content Studio</p>
+          <h1>홈페이지 관리자</h1>
+          <p class="admin-subtitle">
+            이 페이지에서 수정한 내용은 현재 브라우저에 저장되고, 메인 사이트에 바로 반영됩니다.
+          </p>
+        </div>
+        <div class="admin-actions">
+          <a class="admin-link" href="./index.html" target="_blank" rel="noreferrer">사이트 보기</a>
+          <button class="admin-button ghost" type="button" id="draft-save-button">브라우저 저장</button>
+          <button class="admin-button solid" type="button" id="publish-button">사이트 반영</button>
+          <button class="admin-button ghost" type="button" id="export-button">JSON 내보내기</button>
+          <button class="admin-button ghost" type="button" id="import-button">JSON 가져오기</button>
+          <button class="admin-button ghost" type="button" id="reset-button">초기값 복원</button>
+        </div>
+      </header>
+
+      <div class="admin-status">
+        <div class="status-copy">
+          <strong id="status-text">편집 가능</strong>
+          <span id="status-detail">변경 후 저장 또는 사이트 반영을 진행하세요.</span>
+        </div>
+        <div class="status-auth">
+          <label for="admin-token">관리 토큰</label>
+          <input id="admin-token" type="password" placeholder="사이트 반영용 토큰" />
+        </div>
+      </div>
+
+      <main class="admin-grid">
+        <section class="admin-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-eyebrow">Brand</p>
+              <h2>기본 회사 정보</h2>
+            </div>
+          </div>
+          <div class="form-grid" id="brand-fields"></div>
+        </section>
+
+        <section class="admin-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-eyebrow">Hero</p>
+              <h2>메인 첫 화면 문구</h2>
+            </div>
+          </div>
+          <div class="form-grid" id="hero-fields"></div>
+        </section>
+
+        <section class="admin-panel full">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-eyebrow">Featured</p>
+              <h2>메인 대표 시공 사례</h2>
+              <p>이미지, 제목, 링크를 바꾸면 첫 화면 카드와 큰 메인 이미지가 같이 바뀝니다.</p>
+            </div>
+            <button class="admin-button ghost" type="button" id="add-featured-button">대표 사례 추가</button>
+          </div>
+          <div class="repeat-list" id="featured-list"></div>
+        </section>
+
+        <section class="admin-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-eyebrow">About</p>
+              <h2>소개 문구</h2>
+            </div>
+          </div>
+          <div class="form-grid" id="about-fields"></div>
+          <div class="subpanel">
+            <div class="subpanel-head">
+              <h3>강점 카드</h3>
+              <button class="admin-button ghost" type="button" id="add-about-value-button">강점 추가</button>
+            </div>
+            <div class="repeat-list compact" id="about-values-list"></div>
+          </div>
+        </section>
+
+        <section class="admin-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-eyebrow">Intro</p>
+              <h2>중간 소개 문구</h2>
+            </div>
+          </div>
+          <div class="form-grid" id="intro-fields"></div>
+          <div class="subpanel">
+            <div class="subpanel-head">
+              <h3>서비스 카드</h3>
+              <button class="admin-button ghost" type="button" id="add-solution-button">서비스 추가</button>
+            </div>
+            <div class="repeat-list compact" id="solutions-list-admin"></div>
+          </div>
+        </section>
+
+        <section class="admin-panel full">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-eyebrow">Projects</p>
+              <h2>아래 프로젝트 카드</h2>
+            </div>
+            <button class="admin-button ghost" type="button" id="add-project-button">프로젝트 추가</button>
+          </div>
+          <div class="repeat-list compact" id="projects-list-admin"></div>
+        </section>
+
+        <section class="admin-panel full">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-eyebrow">Support</p>
+              <h2>지원/자료 섹션</h2>
+            </div>
+          </div>
+          <div class="form-grid" id="support-fields"></div>
+          <div class="subpanel">
+            <div class="subpanel-head">
+              <h3>지원 카드</h3>
+              <button class="admin-button ghost" type="button" id="add-support-item-button">지원 카드 추가</button>
+            </div>
+            <div class="repeat-list compact" id="support-items-list"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <input id="import-file" type="file" accept="application/json" hidden />
+
+    <script src="./site-data.js"></script>
+    <script src="./site-storage.js"></script>
+    <script src="./site-config.js"></script>
+    <script src="./admin.js"></script>
+  </body>
+</html>
