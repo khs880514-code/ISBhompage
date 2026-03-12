@@ -12,9 +12,26 @@ const importFile = document.querySelector("#import-file");
 const resetButton = document.querySelector("#reset-button");
 const adminTokenInput = document.querySelector("#admin-token");
 
-let state = storage ? storage.loadSiteData() : window.defaultSiteData || {};
-
 const sessionTokenKey = "isb-admin-token";
+
+const clone = (value) => JSON.parse(JSON.stringify(value));
+
+const ensureStateShape = (value) => {
+  const base = storage ? storage.getDefaultData() : clone(window.defaultSiteData || {});
+  const merged = storage?.mergeData ? storage.mergeData(base, value || {}) : { ...base, ...(value || {}) };
+
+  merged.featuredProjects = Array.isArray(merged.featuredProjects) ? merged.featuredProjects : [];
+  merged.solutions = Array.isArray(merged.solutions) ? merged.solutions : [];
+  merged.projects = Array.isArray(merged.projects) ? merged.projects : [];
+  merged.about = merged.about || {};
+  merged.about.values = Array.isArray(merged.about.values) ? merged.about.values : [];
+  merged.support = merged.support || {};
+  merged.support.items = Array.isArray(merged.support.items) ? merged.support.items : [];
+
+  return merged;
+};
+
+let state = ensureStateShape(storage ? storage.loadSiteData() : window.defaultSiteData || {});
 
 if (adminTokenInput) {
   adminTokenInput.value = window.sessionStorage.getItem(sessionTokenKey) || "";
@@ -27,10 +44,10 @@ const defaultFeaturedProject = () => ({
   label: "Featured Case",
   chipIndex: String((state.featuredProjects?.length || 0) + 1).padStart(2, "0"),
   chipTitle: "새 대표 사례",
-  chipSubtitle: "행사장 / 시스템",
+  chipSubtitle: "행사명 / 시스템",
   title: "대표 시공 사례 제목",
   meta: "카테고리 / 장소 / 시스템",
-  summary: "대표 사례 설명을 입력하세요.",
+  summary: "대표 사례 설명을 입력해주세요.",
   tags: ["New Project", "ISB"],
   image: "",
   link: "",
@@ -38,25 +55,25 @@ const defaultFeaturedProject = () => ({
 
 const defaultAboutValue = () => ({
   title: "새 강점",
-  description: "강점 설명을 입력하세요.",
+  description: "강점 설명을 입력해주세요.",
 });
 
 const defaultSolution = () => ({
   index: String((state.solutions?.length || 0) + 1).padStart(2, "0"),
   title: "새 서비스",
-  description: "서비스 설명을 입력하세요.",
+  description: "서비스 설명을 입력해주세요.",
 });
 
 const defaultProject = () => ({
   category: "프로젝트 분류",
   title: "프로젝트명",
-  description: "프로젝트 설명을 입력하세요.",
+  description: "프로젝트 설명을 입력해주세요.",
   link: "",
 });
 
 const defaultSupportItem = () => ({
   title: "새 지원 카드",
-  description: "지원 카드 설명을 입력하세요.",
+  description: "지원 카드 설명을 입력해주세요.",
 });
 
 const setStatus = (title, detail) => {
@@ -70,15 +87,15 @@ const setStatus = (title, detail) => {
 };
 
 const markDirty = () => {
-  setStatus("수정 중", "브라우저 저장 또는 사이트 반영을 진행하세요.");
+  setStatus("수정 중", "브라우저 저장 또는 사이트 반영을 진행해주세요.");
 };
 
 const markDraftSaved = () => {
-  setStatus("브라우저 저장 완료", "현재 브라우저에 임시 저장했습니다. 사이트 반영은 별도 버튼으로 진행하세요.");
+  setStatus("브라우저 저장 완료", "현재 브라우저에 임시 저장되었습니다. 공개 사이트 반영은 별도로 진행해주세요.");
 };
 
 const markPublished = () => {
-  setStatus("사이트 반영 완료", "배포된 사이트 데이터에 저장했습니다. 홈페이지를 새로고침해 확인하세요.");
+  setStatus("사이트 반영 완료", "배포된 사이트 데이터에 저장되었습니다. 홈페이지를 새로고침해 확인해주세요.");
 };
 
 const createField = ({ label, value, type = "text", full = false, onChange, help }) => {
@@ -128,7 +145,7 @@ const createImageField = ({ label, value, onChange }) => {
   const urlInput = document.createElement("input");
   urlInput.type = "text";
   urlInput.value = value || "";
-  urlInput.placeholder = "이미지 URL 또는 업로드된 데이터";
+  urlInput.placeholder = "이미지 URL 또는 업로드한 데이터";
   wrapper.appendChild(urlInput);
 
   const preview = document.createElement("div");
@@ -225,8 +242,8 @@ const createItemCard = ({ title, subtitle, onMoveUp, onMoveDown, onDelete }) => 
   actions.className = "item-card-actions";
 
   [
-    { text: "↑", onClick: onMoveUp },
-    { text: "↓", onClick: onMoveDown },
+    { text: "위로", onClick: onMoveUp },
+    { text: "아래로", onClick: onMoveDown },
     { text: "삭제", onClick: onDelete, danger: true },
   ].forEach((action) => {
     const button = document.createElement("button");
@@ -654,7 +671,7 @@ const saveDraftLocally = () => {
 const loadPublishedData = async () => {
   if (isLocalFile || !runtimeConfig.siteDataEndpoint || !window.fetch) {
     if (isLocalFile) {
-      setStatus("로컬 편집 모드", "로컬 파일에서는 브라우저 저장과 JSON 백업 위주로 사용하세요.");
+      setStatus("로컬 편집 모드", "로컬 파일에서는 브라우저 저장과 JSON 백업 위주로 사용해주세요.");
     }
     return;
   }
@@ -671,9 +688,9 @@ const loadPublishedData = async () => {
 
     const result = await response.json();
     const remoteData = result?.data || result;
-    state = storage ? storage.mergeData(storage.getDefaultData(), remoteData) : remoteData;
+    state = ensureStateShape(remoteData);
     renderAll();
-    setStatus("사이트 데이터 로드 완료", "현재 배포된 데이터를 불러왔습니다. 수정 후 사이트 반영을 진행할 수 있습니다.");
+    setStatus("사이트 데이터 로드 완료", "현재 배포된 사이트 데이터를 불러왔습니다.");
   } catch (error) {
     setStatus("원격 데이터 로드 실패", "기본 데이터로 편집 중입니다. 네트워크 또는 함수 배포 상태를 확인해주세요.");
   }
@@ -687,7 +704,7 @@ const publishToSite = async () => {
 
   const adminToken = adminTokenInput?.value?.trim();
   if (!adminToken) {
-    setStatus("관리 토큰 필요", "사이트 반영을 위해 관리자 토큰을 입력해주세요.");
+    setStatus("관리자 토큰 필요", "사이트 반영을 위해 관리자 토큰을 입력해주세요.");
     return;
   }
 
@@ -712,7 +729,7 @@ const publishToSite = async () => {
     storage?.saveSiteData(state);
     markPublished();
   } catch (error) {
-    setStatus("사이트 반영 실패", error.message || "관리 토큰 또는 서버 설정을 확인해주세요.");
+    setStatus("사이트 반영 실패", error.message || "관리자 토큰 또는 서버 설정을 확인해주세요.");
   } finally {
     publishButton.disabled = false;
   }
@@ -752,15 +769,15 @@ draftSaveButton?.addEventListener("click", saveDraftLocally);
 publishButton?.addEventListener("click", publishToSite);
 
 resetButton?.addEventListener("click", () => {
-  const ok = window.confirm("로컬 저장된 수정 내용과 현재 편집값을 초기값으로 되돌릴까요?");
+  const ok = window.confirm("로컬 저장 내용과 현재 편집값을 기본값으로 되돌릴까요?");
   if (!ok) {
     return;
   }
 
   storage?.resetSiteData();
-  state = storage ? storage.getDefaultData() : window.defaultSiteData || {};
+  state = ensureStateShape(window.defaultSiteData || {});
   renderAll();
-  setStatus("초기값 복원", "기본 데이터로 되돌렸습니다. 필요하면 사이트 반영을 다시 진행하세요.");
+  setStatus("초기값 복원", "기본 데이터로 되돌렸습니다. 필요하면 사이트 반영을 다시 진행해주세요.");
 });
 
 exportButton?.addEventListener("click", () => {
@@ -787,10 +804,10 @@ importFile?.addEventListener("change", async (event) => {
   try {
     const text = await file.text();
     const parsed = JSON.parse(text);
-    state = storage ? storage.mergeData(storage.getDefaultData(), parsed) : parsed;
+    state = ensureStateShape(parsed);
     renderAll();
     markDirty();
-    setStatus("가져오기 완료", "불러온 데이터를 검토한 뒤 브라우저 저장 또는 사이트 반영을 진행하세요.");
+    setStatus("가져오기 완료", "불러온 데이터를 검토한 뒤 브라우저 저장 또는 사이트 반영을 진행해주세요.");
   } catch (error) {
     setStatus("가져오기 실패", "JSON 형식이 올바른지 확인해주세요.");
   }
