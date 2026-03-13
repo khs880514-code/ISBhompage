@@ -91,14 +91,17 @@ window.defaultSiteData = {
       "ISB는 장비 공급보다 현장 실행을 중심에 둡니다. 트러스 리깅, 구조 설치, 투명 LED, HASTATI, SYMA 시스템을 전시장 조건에 맞춰 함께 설계하고 시공합니다.",
     values: [
       {
+        index: "01",
         title: "Exhibition Rigging",
         description: "행사장 구조와 제한 구역을 고려해 안전하고 효율적인 리깅 구조를 설계합니다.",
       },
       {
+        index: "02",
         title: "System Integration",
         description: "G-TLD, HASTATI, SYMA, 라이트박스 등 다양한 시스템을 현장 성격에 맞게 연결합니다.",
       },
       {
+        index: "03",
         title: "Field Execution",
         description: "사전 조립, 빠른 설치, 정돈된 마감까지 실제 운영 흐름을 고려한 시공을 진행합니다.",
       },
@@ -128,27 +131,39 @@ window.defaultSiteData = {
   ],
   projects: [
     {
+      index: "01",
       category: "Truss Rigging",
+      detail: "EXCO / mobile HASTATI / LED",
       title: "국제 축산 박람회 현장 시공",
       description: "EXCO 현장에서 mobile HASTATI 구조와 LED 연출이 함께 들어간 리깅 작업 사례입니다.",
+      image: "./assets/featured/case-03.jpg",
       link: "https://blog.naver.com/e_isb/224003762040?fromRss=true&trackingCode=rss",
     },
     {
+      index: "02",
       category: "System Build",
+      detail: "로비 구조 / 빠른 설치 / 현장 대응",
       title: "로비 시스템 구조 설치",
       description: "빠른 설치와 정돈된 마감이 필요한 로비 구조물에 mobile HASTATI를 적용한 사례입니다.",
+      image: "./assets/featured/case-04.jpg",
       link: "https://blog.naver.com/e_isb/223776095197?fromRss=true&trackingCode=rss",
     },
     {
+      index: "03",
       category: "SYMA",
+      detail: "COEX / 복층 부스 / 조립 효율",
       title: "SEMICON KOREA 복층 부스",
       description: "작은 공간에서도 조립 효율이 좋은 SYMA 시스템으로 복층 구조를 구현한 사례입니다.",
+      image: "./assets/featured/case-05.jpg",
       link: "https://blog.naver.com/e_isb/223766170272?fromRss=true&trackingCode=rss",
     },
     {
+      index: "04",
       category: "Banner / HASTATI",
+      detail: "배너 구조 / 빠른 설치 / 철수 대응",
       title: "배너 구조 설치 사례",
       description: "행사 성격에 맞춰 설치와 철수가 빠른 HASTATI 구조를 적용한 프로젝트입니다.",
+      image: "./assets/featured/case-02.gif",
       link: "https://blog.naver.com/e_isb/223136024058?fromRss=true&trackingCode=rss",
     },
   ],

@@ -83,8 +83,9 @@ const renderAboutValues = () => {
 
   container.innerHTML = values
     .map(
-      (value) => `
-        <article class="reveal">
+      (value, index) => `
+        <article class="value-card reveal">
+          <span class="value-card-index">${value.index || String(index + 1).padStart(2, "0")}</span>
           <strong>${value.title}</strong>
           <p>${value.description}</p>
         </article>
@@ -232,12 +233,21 @@ const renderProjects = () => {
 
   container.innerHTML = projects
     .map(
-      (project) => `
-        <article class="portfolio-card reveal">
-          <span>${project.category}</span>
-          <h3>${project.title}</h3>
-          <p>${project.description}</p>
-          <a href="${project.link}" target="_blank" rel="noreferrer">관련 글 열기</a>
+      (project, index) => `
+        <article
+          class="portfolio-card reveal"
+          style="--project-image: linear-gradient(180deg, rgba(6, 8, 10, 0.08), rgba(6, 8, 10, 0.22)), url('${project.image || ""}');"
+        >
+          <div class="portfolio-card-body">
+            <div class="portfolio-card-top">
+              <span>${project.category}</span>
+              <strong class="portfolio-card-index">${project.index || String(index + 1).padStart(2, "0")}</strong>
+            </div>
+            <p class="portfolio-card-detail">${project.detail || ""}</p>
+            <h3>${project.title}</h3>
+            <p>${project.description}</p>
+            <a class="portfolio-card-link" href="${project.link}" target="_blank" rel="noreferrer">관련 글 열기</a>
+          </div>
         </article>
       `,
     )
