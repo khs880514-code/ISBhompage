@@ -393,19 +393,58 @@ a {
 .project-chip {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-height: 150px;
-  padding: 20px;
+  gap: 14px;
+  min-height: 220px;
+  padding: 10px;
   border: 1px solid var(--line);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.05);
   color: var(--text);
   cursor: pointer;
   text-align: left;
+  overflow: hidden;
   transition:
     transform 180ms ease,
     border-color 180ms ease,
     background 180ms ease;
+}
+
+.project-chip-media {
+  position: relative;
+  aspect-ratio: 1.65 / 1;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.project-chip-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(7, 8, 10, 0.08), rgba(7, 8, 10, 0.42));
+  pointer-events: none;
+}
+
+.project-chip-media img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.project-chip-media span {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+}
+
+.project-chip-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 10px 10px;
 }
 
 .project-chip strong {

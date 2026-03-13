@@ -121,9 +121,14 @@ const buildProjectChip = (project, index) => {
   button.dataset.image = buildHeroImageValue(project.image);
   button.dataset.link = project.link || "#";
   button.innerHTML = `
-    <span>${project.chipIndex || String(index + 1).padStart(2, "0")}</span>
-    <strong>${project.chipTitle || project.title || ""}</strong>
-    <small>${project.chipSubtitle || project.meta || ""}</small>
+    <div class="project-chip-media">
+      <img src="${project.image || ""}" alt="${project.chipTitle || project.title || "Project image"}" loading="lazy" />
+      <span>${project.chipIndex || String(index + 1).padStart(2, "0")}</span>
+    </div>
+    <div class="project-chip-copy">
+      <strong>${project.chipTitle || project.title || ""}</strong>
+      <small>${project.chipSubtitle || project.meta || ""}</small>
+    </div>
   `;
   return button;
 };
