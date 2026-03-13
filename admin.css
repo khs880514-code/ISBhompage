@@ -141,10 +141,41 @@ body {
   min-width: min(100%, 320px);
 }
 
+.status-auth-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .status-auth label {
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--text-soft);
+}
+
+.token-visibility-button {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.token-visibility-button:hover,
+.token-visibility-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.92);
 }
 
 .status-auth input {

@@ -11,6 +11,7 @@ const importButton = document.querySelector("#import-button");
 const importFile = document.querySelector("#import-file");
 const resetButton = document.querySelector("#reset-button");
 const adminTokenInput = document.querySelector("#admin-token");
+const toggleTokenVisibilityButton = document.querySelector("#toggle-token-visibility");
 
 const sessionTokenKey = "isb-admin-token";
 
@@ -39,6 +40,27 @@ if (adminTokenInput) {
     window.sessionStorage.setItem(sessionTokenKey, event.target.value);
   });
 }
+
+const syncTokenVisibilityLabel = () => {
+  if (!adminTokenInput || !toggleTokenVisibilityButton) {
+    return;
+  }
+
+  const isVisible = adminTokenInput.type === "text";
+  toggleTokenVisibilityButton.textContent = isVisible ? "숨기기" : "보기";
+  toggleTokenVisibilityButton.setAttribute("aria-pressed", String(isVisible));
+};
+
+toggleTokenVisibilityButton?.addEventListener("click", () => {
+  if (!adminTokenInput) {
+    return;
+  }
+
+  adminTokenInput.type = adminTokenInput.type === "password" ? "text" : "password";
+  syncTokenVisibilityLabel();
+});
+
+syncTokenVisibilityLabel();
 
 const defaultFeaturedProject = () => ({
   label: "Featured Case",

@@ -38,7 +38,12 @@
           <span id="status-detail">변경 후 브라우저 저장 또는 사이트 반영을 진행해주세요.</span>
         </div>
         <div class="status-auth">
-          <label for="admin-token">관리자 토큰</label>
+          <div class="status-auth-head">
+            <label for="admin-token">관리자 토큰</label>
+            <button class="token-visibility-button" type="button" id="toggle-token-visibility" aria-pressed="false">
+              보기
+            </button>
+          </div>
           <input id="admin-token" type="password" placeholder="사이트 반영용 토큰" />
         </div>
       </div>
