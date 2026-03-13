@@ -12,9 +12,9 @@ window.defaultSiteData = {
   },
   hero: {
     eyebrow: "International Service Business",
-    title: "시공 사례로 먼저 증명하는 ISB",
+    title: "실제 시공으로 증명하는 ISB",
     description:
-      "첫 화면에서 바로 대표 시공 사례가 보이도록 구성했습니다. 아래 사례를 선택하면 메인 사진과 상세 정보가 자연스럽게 바뀝니다.",
+      "대표 시공 사례를 첫 화면 전면에 두고, 프로젝트 이동과 상세 정보는 이미지 바깥에서 정리해 현장 사진이 먼저 보이도록 구성했습니다.",
   },
   featuredProjects: [
     {
@@ -84,11 +84,11 @@ window.defaultSiteData = {
     },
   ],
   introBand:
-    "ISB 블로그의 공개 사례를 기준으로 사이트를 구성했습니다. 리깅 매뉴얼, 트러스 구조물, G-TLD, mobile HASTATI, SYMA 같은 실무 중심 카테고리를 홈페이지 구조에 맞게 다시 정리했습니다.",
+    "블로그에 축적된 공개 시공 기록을 바탕으로, 리깅 매뉴얼부터 시스템 사례까지 실무 흐름에 맞춰 다시 정리했습니다.",
   about: {
-    title: "전시 리깅을 넘어 구조와 연출까지 함께 다루는 팀",
+    title: "전시 리깅과 구조 연출을 잇는 팀",
     description:
-      "ISB는 단순 장비 공급보다 현장 실행을 중심에 둔 회사입니다. 트러스 리깅, 구조 설치, 투명 LED 연출, HASTATI 배너 구조, SYMA 복층 시스템까지 전시 현장에 맞춰 통합적으로 제안합니다.",
+      "ISB는 장비 공급보다 현장 실행을 중심에 둡니다. 트러스 리깅, 구조 설치, 투명 LED, HASTATI, SYMA 시스템을 전시장 조건에 맞춰 함께 설계하고 시공합니다.",
     values: [
       {
         title: "Exhibition Rigging",
@@ -153,9 +153,9 @@ window.defaultSiteData = {
     },
   ],
   support: {
-    title: "블로그의 기술 자료와 시공 기록을 실무 기준으로 재정리",
+    title: "기술 자료와 시공 기록을 빠르게 찾는 Support",
     description:
-      "블로그 카테고리의 리깅 매뉴얼, 트러스 구조물, G-TLD, mobile HASTATI, SYMA 내용을 홈페이지에서는 방문자가 더 빠르게 이해할 수 있도록 기술자료와 프로젝트 흐름으로 나눴습니다.",
+      "블로그의 리깅 매뉴얼, 트러스 구조물, G-TLD, mobile HASTATI, SYMA 아카이브를 방문자 관점에 맞춰 기술 자료와 사례 중심으로 나눴습니다.",
     items: [
       {
         title: "Manual & Tech",

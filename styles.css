@@ -148,17 +148,15 @@ a {
   padding: 18px 0 64px;
 }
 
-.hero-intro {
-  position: absolute;
-  top: 38px;
-  left: 38px;
-  z-index: 4;
+.hero-lead {
   display: grid;
-  gap: 18px;
-  width: min(540px, calc(100% - 470px));
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 20px;
+  align-items: end;
+  margin-bottom: 22px;
 }
 
-.hero-intro-note,
+.hero-lead-panel,
 .hero-spotlight,
 .project-chip {
   border: 1px solid var(--line);
@@ -166,34 +164,42 @@ a {
   backdrop-filter: blur(14px);
 }
 
-.hero-intro-note {
+.hero-lead-copy {
+  max-width: 760px;
+}
+
+.hero-lead-panel {
   width: min(360px, 100%);
-  padding: 18px 20px;
+  margin-left: auto;
+  padding: 20px 22px;
   border-radius: 24px;
   background: rgba(10, 11, 13, 0.54);
 }
 
-.hero-intro-note p {
+.hero-lead-panel p {
   margin: 0;
   color: var(--text-soft);
   line-height: 1.8;
+  font-size: 0.98rem;
 }
 
 .hero-showcase {
-  position: relative;
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.56fr);
+  gap: 20px;
+  align-items: stretch;
 }
 
 .hero-visual-frame {
-  min-height: 920px;
+  min-height: 760px;
 }
 
 .hero-stage {
   position: relative;
   height: 100%;
-  min-height: 920px;
+  min-height: 760px;
   border: 1px solid var(--line);
-  border-radius: 42px;
+  border-radius: 36px;
   overflow: hidden;
   background-image: var(--hero-image);
   background-size: cover;
@@ -206,9 +212,8 @@ a {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(92deg, rgba(7, 8, 9, 0.68) 0%, rgba(7, 8, 9, 0.22) 34%, rgba(7, 8, 9, 0.08) 58%),
-    radial-gradient(circle at bottom right, rgba(208, 174, 120, 0.26), transparent 18%),
-    linear-gradient(180deg, rgba(7, 8, 9, 0.08), rgba(7, 8, 9, 0.28));
+    radial-gradient(circle at bottom right, rgba(208, 174, 120, 0.18), transparent 18%),
+    linear-gradient(180deg, rgba(7, 8, 9, 0.06), rgba(7, 8, 9, 0.18));
   pointer-events: none;
 }
 
@@ -216,7 +221,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-width: 500px;
+  max-width: none;
 }
 
 .hero-stage-copy,
@@ -227,29 +232,7 @@ a {
 }
 
 .hero-image-badge {
-  position: absolute;
-  left: 24px;
-  bottom: 24px;
-  display: inline-flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: min(70%, 420px);
-  padding: 16px 18px;
-  border-radius: 20px;
-  background: rgba(8, 10, 12, 0.46);
-  backdrop-filter: blur(12px);
-  opacity: 0;
-  transform: translateY(16px);
-  transition:
-    opacity 180ms ease,
-    transform 180ms ease;
-}
-
-.hero-stage:hover .hero-image-badge,
-.hero-stage:focus-within .hero-image-badge,
-.hero-image-badge.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+  display: none;
 }
 
 .hero-image-badge span {
@@ -278,15 +261,15 @@ a {
 .contact-card h2,
 .hero-spotlight h2 {
   margin: 0;
-  line-height: 0.98;
+  line-height: 1;
   letter-spacing: -0.05em;
   font-weight: 800;
 }
 
 .hero-stage-copy h1 {
-  max-width: 7ch;
-  font-size: clamp(3.2rem, 5.4vw, 5rem);
-  line-height: 0.92;
+  max-width: 12ch;
+  font-size: clamp(2.8rem, 4.8vw, 4.9rem);
+  line-height: 0.94;
   text-wrap: balance;
 }
 
@@ -301,19 +284,18 @@ a {
 }
 
 .hero-text {
-  max-width: 34rem;
+  max-width: 58ch;
+  font-size: 1rem;
+  text-wrap: pretty;
 }
 
 .hero-spotlight {
-  position: absolute;
-  right: 28px;
-  bottom: 28px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  width: min(380px, calc(100% - 56px));
-  padding: 30px 28px;
-  border-radius: 28px;
+  justify-content: space-between;
+  width: 100%;
+  padding: 34px 30px;
+  border-radius: 30px;
   background:
     linear-gradient(180deg, rgba(8, 10, 12, 0.68), rgba(8, 10, 12, 0.92)),
     rgba(255, 255, 255, 0.04);
@@ -322,8 +304,9 @@ a {
 }
 
 .hero-spotlight h2 {
-  font-size: clamp(2rem, 3.6vw, 3.25rem);
-  max-width: 8ch;
+  font-size: clamp(2.1rem, 3vw, 3.2rem);
+  max-width: 7ch;
+  text-wrap: balance;
 }
 
 .hero-case-meta {
@@ -481,7 +464,7 @@ a {
 
 .intro-band {
   margin: 10px 0 32px;
-  padding: 22px 26px;
+  padding: 20px 24px;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
@@ -502,19 +485,26 @@ a {
 
 .section-split {
   display: grid;
-  grid-template-columns: 0.8fr 1.2fr;
+  grid-template-columns: 0.92fr 1.08fr;
   gap: 36px;
+}
+
+.section-heading {
+  display: grid;
+  gap: 14px;
+  align-content: start;
 }
 
 .section-heading h2,
 .contact-card h2 {
-  font-size: clamp(2.2rem, 4vw, 4.2rem);
-  max-width: 10ch;
+  font-size: clamp(1.95rem, 3.3vw, 3.5rem);
+  max-width: 12ch;
+  text-wrap: balance;
 }
 
 .section-body {
   display: grid;
-  gap: 30px;
+  gap: 24px;
 }
 
 .value-list,
@@ -600,6 +590,7 @@ a {
 .contact-copy {
   display: flex;
   flex-direction: column;
+  gap: 14px;
 }
 
 .contact-card {
@@ -759,35 +750,32 @@ a {
   transform: translateY(0);
 }
 
+.section-body > p,
+.contact-copy > p,
+.intro-band p {
+  max-width: 58ch;
+  margin: 0;
+  text-wrap: pretty;
+}
+
 @media (max-width: 1200px) {
-  .hero-intro,
+  .hero-lead,
   .hero-showcase {
     grid-template-columns: 1fr;
   }
 
-  .hero-intro {
-    position: relative;
-    top: auto;
-    left: auto;
-    width: auto;
-    margin-bottom: 20px;
+  .hero-lead {
+    margin-bottom: 18px;
+  }
+
+  .hero-lead-panel {
+    width: 100%;
+    margin-left: 0;
   }
 
   .hero-visual-frame,
   .hero-stage {
     min-height: 640px;
-  }
-
-  .hero-showcase {
-    display: block;
-  }
-
-  .hero-spotlight {
-    position: relative;
-    right: auto;
-    bottom: auto;
-    width: 100%;
-    margin-top: 18px;
   }
 
   .project-selector,
@@ -857,12 +845,9 @@ a {
     padding-top: 6px;
   }
 
-  .hero-intro {
-    position: relative;
-    top: auto;
-    left: auto;
-    width: auto;
-    margin-bottom: 18px;
+  .hero-lead {
+    gap: 16px;
+    margin-bottom: 16px;
   }
 
   .hero-stage {
@@ -874,26 +859,14 @@ a {
     min-height: 500px;
   }
 
-  .hero-image-badge {
-    left: 18px;
-    right: 18px;
-    bottom: 18px;
-    max-width: none;
-    opacity: 1;
-    transform: translateY(0);
-  }
-
   .hero-stage-copy h1 {
-    max-width: 7ch;
-    font-size: clamp(2.7rem, 14vw, 4.4rem);
+    max-width: 9ch;
+    font-size: clamp(2.6rem, 12vw, 4rem);
   }
 
+  .hero-lead-panel,
   .hero-spotlight {
-    position: relative;
-    right: auto;
-    bottom: auto;
-    width: 100%;
-    margin-top: 18px;
+    padding: 22px 20px;
   }
 
   .hero-spotlight,
