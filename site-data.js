@@ -12,9 +12,9 @@ window.defaultSiteData = {
   },
   hero: {
     eyebrow: "International Service Business",
-    title: "실제 시공 이미지로 먼저 설득하는 전시 리깅 파트너",
+    title: "시공 사례로 먼저 증명하는 ISB",
     description:
-      "ISB는 전시 리깅과 구조 시공, 투명 LED 연출, 시스템 부스 구축을 현장 조건에 맞춰 제안합니다. 아래 대표 사례를 선택하면 메인 이미지와 상세 정보가 바로 바뀝니다.",
+      "첫 화면에서 바로 대표 시공 사례가 보이도록 구성했습니다. 아래 사례를 선택하면 메인 사진과 상세 정보가 자연스럽게 바뀝니다.",
   },
   featuredProjects: [
     {
@@ -27,8 +27,7 @@ window.defaultSiteData = {
       summary:
         "전시 구조 안전성과 현장 시인성을 함께 보여준 사례입니다. 리깅 구조와 투명 디스플레이를 함께 구성해 공간의 집중도를 높였습니다.",
       tags: ["Structure Review", "Truss Rigging", "G-TLD"],
-      image:
-        "https://phinf.pstatic.net/image.nmv/blog_2025_12_11_3259/ci4D0givr2_01.jpg?type=f480x480",
+      image: "./assets/featured/case-01.jpg",
       link: "https://blog.naver.com/e_isb/224106257642?fromRss=true&trackingCode=rss",
     },
     {
@@ -41,8 +40,7 @@ window.defaultSiteData = {
       summary:
         "시야를 막지 않는 투명 LED를 활용해 전시 부스의 개방감과 브랜드 연출을 동시에 확보한 사례입니다.",
       tags: ["Transparent LED", "Media Solution", "Exhibition Tech"],
-      image:
-        "https://blogthumb.pstatic.net/MjAyNTEyMTFfMTcz/MDAxNzY1NDMxODUzNDU1.9IyXrdYJhJOxFh1zf7RvzvIgHQsFBq_uAwG-LN0nrf8g.-TZ1MGCj9hMosxtFKn3geBS9MClRnlW8DiISQ_VqyLYg.GIF/2025_comup_gtld_gif.gif?type=s3",
+      image: "./assets/featured/case-02.gif",
       link: "https://blog.naver.com/e_isb/224106041759?fromRss=true&trackingCode=rss",
     },
     {
@@ -55,8 +53,7 @@ window.defaultSiteData = {
       summary:
         "리깅 제한 구역을 고려해 현장 구조를 설계하고, 하부 라이트박스를 함께 구성해 부스의 존재감을 강화한 사례입니다.",
       tags: ["BEXCO", "Lighting Box", "Rigging Limits"],
-      image:
-        "https://blogthumb.pstatic.net/MjAyNTEyMDRfMjg1/MDAxNzY0ODM0NDUxNzg4.4Lfw0Oe3YJqI8rGmRfZr0hfn8hAV6rHtar-W4qrO-wIg.EwSFe5NFZxqF6v6s0fAbwwPGQ7EtzibI_NuZNQOvjtgg.JPEG/KakaoTalk_20251204_101214062_01.jpg?type=s3",
+      image: "./assets/featured/case-03.jpg",
       link: "https://blog.naver.com/e_isb/224098212325?fromRss=true&trackingCode=rss",
     },
     {
@@ -69,8 +66,7 @@ window.defaultSiteData = {
       summary:
         "대형 라이트박스 구조를 위해 사전 조립과 현장 설치 효율을 함께 고려한 ISB 운영 방식이 드러나는 사례입니다.",
       tags: ["KINTEX", "Pre-assembly", "Lighting Box"],
-      image:
-        "https://blogthumb.pstatic.net/MjAyNTA2MTBfMTIz/MDAxNzQ5NTE0MTM1NjM2.gJ3H9iHPIIPKH17np6W2BtPoue-QYblCPZ9SJ7DQoEsg.fJLAaRTgiieBmZKKL_Qqeq8MrSB0iPYUBhxBEw-jehAg.JPEG/KakaoTalk_20250609_132339568_07.jpg?type=s3",
+      image: "./assets/featured/case-04.jpg",
       link: "https://blog.naver.com/e_isb/223894223541?fromRss=true&trackingCode=rss",
     },
     {
@@ -83,13 +79,12 @@ window.defaultSiteData = {
       summary:
         "조립 속도와 공간 효율이 중요한 현장에서 SYMA 시스템을 활용해 안정적인 복층 구조를 구현한 사례입니다.",
       tags: ["SYMA", "Double Deck", "Fast Assembly"],
-      image:
-        "https://blogthumb.pstatic.net/MjAyNTAyMTlfMTAg/MDAxNzM5OTQ4ODI4NzQ0.1r5i-SvlmRwD0KlUY5XORlbdlF-22LDVM6AJHp26Gvog.jx-4F0PErQcQX8tATtnO1zut2KDOeY_tmrcs-sie9xgg.JPEG/KakaoTalk_20250218_101101594_02.jpg?type=s3",
+      image: "./assets/featured/case-05.jpg",
       link: "https://blog.naver.com/e_isb/223766170272?fromRss=true&trackingCode=rss",
     },
   ],
   introBand:
-    "ISB 블로그의 공개 사례를 기준으로 사이트를 구성했습니다. 리깅 매뉴얼, 트러스 구조물, G-TLD, mobile HASTATI, SYMA 같은 실무 중심 카테고리를 홈페이지 구조에 맞게 재정리했습니다.",
+    "ISB 블로그의 공개 사례를 기준으로 사이트를 구성했습니다. 리깅 매뉴얼, 트러스 구조물, G-TLD, mobile HASTATI, SYMA 같은 실무 중심 카테고리를 홈페이지 구조에 맞게 다시 정리했습니다.",
   about: {
     title: "전시 리깅을 넘어 구조와 연출까지 함께 다루는 팀",
     description:
@@ -160,7 +155,7 @@ window.defaultSiteData = {
   support: {
     title: "블로그의 기술 자료와 시공 기록을 실무 기준으로 재정리",
     description:
-      "블로그 카테고리의 리깅 매뉴얼, 트러스 구조물, G-TLD, mobile HASTATI, SYMA 내용을 홈페이지에서는 방문자가 빠르게 이해할 수 있도록 기술자료와 프로젝트 흐름으로 나눴습니다.",
+      "블로그 카테고리의 리깅 매뉴얼, 트러스 구조물, G-TLD, mobile HASTATI, SYMA 내용을 홈페이지에서는 방문자가 더 빠르게 이해할 수 있도록 기술자료와 프로젝트 흐름으로 나눴습니다.",
     items: [
       {
         title: "Manual & Tech",
