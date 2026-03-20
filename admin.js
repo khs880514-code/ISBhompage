@@ -17,17 +17,108 @@ const sessionTokenKey = "isb-admin-token";
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
+const toObject = (value) => (value && typeof value === "object" && !Array.isArray(value) ? value : {});
+const toStringValue = (value, fallback = "") => (typeof value === "string" ? value : fallback);
+
+const normalizeFeaturedProject = (item, index) => {
+  const project = toObject(item);
+
+  return {
+    label: toStringValue(project.label, "Featured Case"),
+    chipIndex: toStringValue(project.chipIndex, String(index + 1).padStart(2, "0")),
+    chipTitle: toStringValue(project.chipTitle),
+    chipSubtitle: toStringValue(project.chipSubtitle),
+    title: toStringValue(project.title),
+    meta: toStringValue(project.meta),
+    summary: toStringValue(project.summary),
+    tags: Array.isArray(project.tags)
+      ? project.tags.map((tag) => toStringValue(tag)).filter(Boolean)
+      : [],
+    image: toStringValue(project.image),
+    link: toStringValue(project.link),
+  };
+};
+
+const normalizeAboutValue = (item) => {
+  const value = toObject(item);
+
+  return {
+    title: toStringValue(value.title),
+    description: toStringValue(value.description),
+  };
+};
+
+const normalizeSolution = (item, index) => {
+  const value = toObject(item);
+
+  return {
+    index: toStringValue(value.index, String(index + 1).padStart(2, "0")),
+    title: toStringValue(value.title),
+    description: toStringValue(value.description),
+  };
+};
+
+const normalizeProject = (item, index) => {
+  const project = toObject(item);
+
+  return {
+    index: toStringValue(project.index, String(index + 1).padStart(2, "0")),
+    category: toStringValue(project.category),
+    detail: toStringValue(project.detail),
+    title: toStringValue(project.title),
+    description: toStringValue(project.description),
+    image: toStringValue(project.image),
+    link: toStringValue(project.link),
+  };
+};
+
+const normalizeSupportItem = (item) => {
+  const value = toObject(item);
+
+  return {
+    title: toStringValue(value.title),
+    description: toStringValue(value.description),
+  };
+};
+
 const ensureStateShape = (value) => {
   const base = storage ? storage.getDefaultData() : clone(window.defaultSiteData || {});
   const merged = storage?.mergeData ? storage.mergeData(base, value || {}) : { ...base, ...(value || {}) };
 
-  merged.featuredProjects = Array.isArray(merged.featuredProjects) ? merged.featuredProjects : [];
-  merged.solutions = Array.isArray(merged.solutions) ? merged.solutions : [];
-  merged.projects = Array.isArray(merged.projects) ? merged.projects : [];
-  merged.about = merged.about || {};
-  merged.about.values = Array.isArray(merged.about.values) ? merged.about.values : [];
-  merged.support = merged.support || {};
-  merged.support.items = Array.isArray(merged.support.items) ? merged.support.items : [];
+  merged.brand = toObject(merged.brand);
+  merged.brand.main = toStringValue(merged.brand.main);
+  merged.brand.sub = toStringValue(merged.brand.sub);
+  merged.brand.companyName = toStringValue(merged.brand.companyName);
+  merged.brand.companyIntro = toStringValue(merged.brand.companyIntro);
+  merged.brand.phone = toStringValue(merged.brand.phone);
+  merged.brand.email = toStringValue(merged.brand.email);
+  merged.brand.website = toStringValue(merged.brand.website);
+  merged.brand.blog = toStringValue(merged.brand.blog);
+
+  merged.hero = toObject(merged.hero);
+  merged.hero.eyebrow = toStringValue(merged.hero.eyebrow);
+  merged.hero.title = toStringValue(merged.hero.title);
+  merged.hero.description = toStringValue(merged.hero.description);
+
+  merged.featuredProjects = Array.isArray(merged.featuredProjects)
+    ? merged.featuredProjects.map(normalizeFeaturedProject)
+    : [];
+  merged.solutions = Array.isArray(merged.solutions) ? merged.solutions.map(normalizeSolution) : [];
+  merged.projects = Array.isArray(merged.projects) ? merged.projects.map(normalizeProject) : [];
+
+  merged.introBand = toStringValue(merged.introBand);
+
+  merged.about = toObject(merged.about);
+  merged.about.title = toStringValue(merged.about.title);
+  merged.about.description = toStringValue(merged.about.description);
+  merged.about.values = Array.isArray(merged.about.values) ? merged.about.values.map(normalizeAboutValue) : [];
+
+  merged.support = toObject(merged.support);
+  merged.support.title = toStringValue(merged.support.title);
+  merged.support.description = toStringValue(merged.support.description);
+  merged.support.items = Array.isArray(merged.support.items)
+    ? merged.support.items.map(normalizeSupportItem)
+    : [];
 
   return merged;
 };
@@ -734,6 +825,9 @@ const publishToSite = async () => {
   setStatus("사이트 반영 중", "서버 저장소에 데이터를 업로드하고 있습니다.");
 
   try {
+    state = ensureStateShape(state);
+    renderAll();
+
     const response = await fetch(runtimeConfig.adminPublishEndpoint, {
       method: "POST",
       headers: {
