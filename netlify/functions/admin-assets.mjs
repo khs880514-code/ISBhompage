@@ -81,7 +81,7 @@ export default async (request) => {
     const formData = await request.formData();
     const file = formData.get("file");
 
-    if (!(file instanceof File)) {
+    if (!file || typeof file.arrayBuffer !== "function" || typeof file.type !== "string") {
       return json(400, {
         ok: false,
         message: "업로드할 이미지 파일이 없습니다.",
