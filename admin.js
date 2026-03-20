@@ -233,6 +233,31 @@ const estimateUtf8Bytes = (value) => {
   return new TextEncoder().encode(text).length;
 };
 
+const getDataUrlMimeType = (dataUrl = "") => {
+  const start = "data:";
+  const separatorIndex = dataUrl.indexOf(";");
+
+  if (!dataUrl.startsWith(start) || separatorIndex <= start.length) {
+    return "";
+  }
+
+  return dataUrl.slice(start.length, separatorIndex);
+};
+
+const estimateDataUrlBinaryBytes = (dataUrl = "") => {
+  const base64Marker = ";base64,";
+  const markerIndex = dataUrl.indexOf(base64Marker);
+
+  if (markerIndex < 0) {
+    return 0;
+  }
+
+  const base64Body = dataUrl.slice(markerIndex + base64Marker.length);
+  const padding = base64Body.endsWith("==") ? 2 : base64Body.endsWith("=") ? 1 : 0;
+
+  return Math.max(0, Math.floor((base64Body.length * 3) / 4) - padding);
+};
+
 const extensionFromMimeType = (mimeType = "") => {
   const normalized = mimeType.toLowerCase();
 
@@ -327,6 +352,16 @@ const uploadAssetFile = async (file, adminToken, fileStem = "image") => {
 };
 
 const uploadAssetSource = async (dataUrl, adminToken, fileStem = "image") => {
+  const binaryBytes = estimateDataUrlBinaryBytes(dataUrl);
+
+  if (binaryBytes > MAX_ASSET_UPLOAD_BYTES) {
+    throw new Error(
+      `이미지 한 장이 너무 큽니다. 현재 파일 크기: ${formatBytes(binaryBytes)}. 관리자 업로드는 ${formatBytes(
+        MAX_ASSET_UPLOAD_BYTES,
+      )} 안쪽 파일이 가장 안정적입니다. 큰 원본이나 GIF는 정적 파일 경로 방식이 더 적합합니다.`,
+    );
+  }
+
   const response = await fetch(runtimeConfig.adminAssetUploadEndpoint, {
     method: "POST",
     headers: {
@@ -335,7 +370,7 @@ const uploadAssetSource = async (dataUrl, adminToken, fileStem = "image") => {
     },
     body: JSON.stringify({
       dataUrl,
-      fileName: `${sanitizeAssetStem(fileStem)}.${extensionFromMimeType(dataUrl.slice(5, dataUrl.indexOf(";")) || "image/jpeg")}`,
+      fileName: `${sanitizeAssetStem(fileStem)}.${extensionFromMimeType(getDataUrlMimeType(dataUrl) || "image/jpeg")}`,
     }),
   });
 
@@ -585,6 +620,14 @@ const createImageField = ({ label, value, onChange }) => {
                 estimateUtf8Bytes(optimized),
               )}로 정리했습니다. 공개 사이트 반영을 눌러주세요.`,
       );
+      if (file.size > MAX_ASSET_UPLOAD_BYTES) {
+        setStatus(
+          "대용량 이미지 안내",
+          `${file.name} 파일 크기 ${formatBytes(
+            file.size,
+          )}는 관리자 업로드 권장 한도를 넘습니다. 미리보기는 되지만 공개 사이트 반영 단계에서는 실패할 수 있습니다.`,
+        );
+      }
     } catch (error) {
       setStatus("이미지 처리 실패", error.message || "이미지 파일을 처리하지 못했습니다.");
     } finally {
