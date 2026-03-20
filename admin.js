@@ -326,6 +326,35 @@ const uploadAssetFile = async (file, adminToken, fileStem = "image") => {
   return result.url;
 };
 
+const uploadAssetSource = async (dataUrl, adminToken, fileStem = "image") => {
+  const response = await fetch(runtimeConfig.adminAssetUploadEndpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-admin-token": adminToken,
+    },
+    body: JSON.stringify({
+      dataUrl,
+      fileName: `${sanitizeAssetStem(fileStem)}.${extensionFromMimeType(dataUrl.slice(5, dataUrl.indexOf(";")) || "image/jpeg")}`,
+    }),
+  });
+
+  const rawText = await response.text();
+  let result = {};
+
+  try {
+    result = rawText ? JSON.parse(rawText) : {};
+  } catch (error) {
+    result = {};
+  }
+
+  if (!response.ok || !result?.url) {
+    throw new Error(result.message || `이미지 업로드에 실패했습니다. (${response.status})`);
+  }
+
+  return result.url;
+};
+
 const readFileAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -438,8 +467,7 @@ const uploadEmbeddedImagesForPublish = async (currentState, adminToken) => {
       `반영용 이미지를 서버 저장소에 올리고 있습니다. ${index + 1}/${targets.length}`,
     );
 
-    const file = await dataUrlToFile(source, target.label);
-    const uploadedUrl = await uploadAssetFile(file, adminToken, target.label);
+    const uploadedUrl = await uploadAssetSource(source, adminToken, target.label);
 
     uploadCache.set(source, uploadedUrl);
     target.owner[target.key] = uploadedUrl;

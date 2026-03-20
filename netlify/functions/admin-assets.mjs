@@ -78,50 +78,49 @@ export default async (request) => {
   }
 
   try {
-    const formData = await request.formData();
-    const file = formData.get("file");
+    const body = await request.json();
+    const dataUrl = typeof body?.dataUrl === "string" ? body.dataUrl : "";
+    const fileName = typeof body?.fileName === "string" ? body.fileName : "image";
+    const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/s);
 
-    if (!file || typeof file.arrayBuffer !== "function" || typeof file.type !== "string") {
+    if (!match) {
       return json(400, {
         ok: false,
         message: "업로드할 이미지 파일이 없습니다.",
       });
     }
 
-    if (!file.type?.startsWith("image/")) {
-      return json(400, {
-        ok: false,
-        message: "이미지 파일만 업로드할 수 있습니다.",
-      });
-    }
+    const mimeType = match[1];
+    const base64Body = match[2];
+    const buffer = Buffer.from(base64Body, "base64");
+    const size = buffer.byteLength;
 
-    if (file.size <= 0) {
+    if (size <= 0) {
       return json(400, {
         ok: false,
         message: "비어 있는 파일은 업로드할 수 없습니다.",
       });
     }
 
-    if (file.size > MAX_ASSET_UPLOAD_BYTES) {
+    if (size > MAX_ASSET_UPLOAD_BYTES) {
       return json(413, {
         ok: false,
-        message: `이미지 한 장이 너무 큽니다. ${Math.round(file.size / 1024 / 1024)}MB 대신 4MB 안쪽 이미지를 사용해주세요.`,
+        message: `이미지 한 장이 너무 큽니다. ${Math.round(size / 1024 / 1024)}MB 대신 4MB 안쪽 이미지를 사용해주세요.`,
       });
     }
 
-    const extension = extensionFromMimeType(file.type);
+    const extension = extensionFromMimeType(mimeType);
     const datePrefix = new Date().toISOString().slice(0, 10);
-    const fileStem = sanitizeFileStem(file.name?.replace(/\.[^.]+$/, "") || "image");
+    const fileStem = sanitizeFileStem(fileName.replace(/\.[^.]+$/, "") || "image");
     const assetKey = `${ASSET_PREFIX}/${datePrefix}/${Date.now()}-${crypto.randomUUID()}-${fileStem}.${extension}`;
     const store = getStore(ASSET_STORE_NAME);
-    const buffer = await file.arrayBuffer();
 
     await store.set(assetKey, new Uint8Array(buffer));
 
     return json(200, {
       ok: true,
       key: assetKey,
-      size: file.size,
+      size,
       url: `/api/assets/${assetKey}`,
     });
   } catch (error) {
