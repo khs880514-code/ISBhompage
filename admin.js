@@ -14,9 +14,9 @@ const adminTokenInput = document.querySelector("#admin-token");
 const toggleTokenVisibilityButton = document.querySelector("#toggle-token-visibility");
 
 const sessionTokenKey = "isb-admin-token";
-const MAX_IMAGE_DIMENSION = 1800;
-const IMAGE_EXPORT_QUALITY = 0.82;
-const EMBEDDED_IMAGE_RECOMPRESS_THRESHOLD = 320 * 1024;
+const MAX_IMAGE_DIMENSION = 2200;
+const IMAGE_EXPORT_QUALITY = 0.9;
+const EMBEDDED_IMAGE_RECOMPRESS_THRESHOLD = 450 * 1024;
 const MAX_PUBLISH_PAYLOAD_BYTES = Math.round(4.5 * 1024 * 1024);
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -253,6 +253,10 @@ const compressImageSource = async (src, force = false) => {
     return src;
   }
 
+  if (src.startsWith("data:image/gif")) {
+    return src;
+  }
+
   const sourceBytes = estimateUtf8Bytes(src);
   if (!force && sourceBytes < EMBEDDED_IMAGE_RECOMPRESS_THRESHOLD) {
     return src;
@@ -396,17 +400,24 @@ const createImageField = ({ label, value, onChange }) => {
 
     try {
       const original = await readFileAsDataUrl(file);
-      const optimized = await compressImageSource(original, true);
+      const optimized = file.type === "image/gif" ? original : await compressImageSource(original);
+      const keptOriginal = estimateUtf8Bytes(optimized) >= estimateUtf8Bytes(original);
 
       urlInput.value = optimized;
       onChange(optimized);
       previewImage.src = optimized;
       markDirty();
       setStatus(
-        "이미지 준비 완료",
-        `${file.name} 이미지를 ${formatBytes(estimateUtf8Bytes(original))}에서 ${formatBytes(
-          estimateUtf8Bytes(optimized),
-        )}로 정리했습니다. 공개 사이트 반영을 눌러주세요.`,
+        file.type === "image/gif" ? "GIF 준비 완료" : "이미지 준비 완료",
+        file.type === "image/gif"
+          ? `${file.name} GIF는 애니메이션 유지를 위해 원본으로 저장했습니다. 용량이 크면 공개 사이트 반영 단계에서 실패할 수 있습니다.`
+          : keptOriginal
+            ? `${file.name} 이미지는 현재 크기 ${formatBytes(
+                estimateUtf8Bytes(original),
+              )}로 유지했습니다. 공개 사이트 반영을 눌러주세요.`
+            : `${file.name} 이미지를 ${formatBytes(estimateUtf8Bytes(original))}에서 ${formatBytes(
+                estimateUtf8Bytes(optimized),
+              )}로 정리했습니다. 공개 사이트 반영을 눌러주세요.`,
       );
     } catch (error) {
       setStatus("이미지 처리 실패", error.message || "이미지 파일을 처리하지 못했습니다.");
