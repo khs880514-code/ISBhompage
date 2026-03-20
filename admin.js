@@ -18,6 +18,7 @@ const MAX_IMAGE_DIMENSION = 2200;
 const IMAGE_EXPORT_QUALITY = 0.9;
 const EMBEDDED_IMAGE_RECOMPRESS_THRESHOLD = 450 * 1024;
 const MAX_PUBLISH_PAYLOAD_BYTES = Math.round(4.5 * 1024 * 1024);
+const MAX_ASSET_UPLOAD_BYTES = Math.round(4.2 * 1024 * 1024);
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -232,6 +233,99 @@ const estimateUtf8Bytes = (value) => {
   return new TextEncoder().encode(text).length;
 };
 
+const extensionFromMimeType = (mimeType = "") => {
+  const normalized = mimeType.toLowerCase();
+
+  if (normalized.includes("jpeg")) {
+    return "jpg";
+  }
+
+  if (normalized.includes("png")) {
+    return "png";
+  }
+
+  if (normalized.includes("webp")) {
+    return "webp";
+  }
+
+  if (normalized.includes("gif")) {
+    return "gif";
+  }
+
+  if (normalized.includes("avif")) {
+    return "avif";
+  }
+
+  if (normalized.includes("svg")) {
+    return "svg";
+  }
+
+  return "bin";
+};
+
+const sanitizeAssetStem = (value = "image") =>
+  String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40) || "image";
+
+const dataUrlToFile = async (dataUrl, fileStem = "image") => {
+  const response = await fetch(dataUrl);
+  const blob = await response.blob();
+  const extension = extensionFromMimeType(blob.type);
+  return new File([blob], `${sanitizeAssetStem(fileStem)}.${extension}`, { type: blob.type || "application/octet-stream" });
+};
+
+const uploadAssetFile = async (file, adminToken, fileStem = "image") => {
+  if (!runtimeConfig.adminAssetUploadEndpoint) {
+    throw new Error("이미지 업로드 경로가 아직 설정되지 않았습니다.");
+  }
+
+  if (!file || file.size <= 0) {
+    throw new Error("업로드할 이미지 파일을 찾지 못했습니다.");
+  }
+
+  if (file.size > MAX_ASSET_UPLOAD_BYTES) {
+    throw new Error(
+      `이미지 한 장이 너무 큽니다. 현재 파일 크기: ${formatBytes(file.size)}. 한 장 기준 ${formatBytes(MAX_ASSET_UPLOAD_BYTES)} 이하 이미지를 사용해주세요.`,
+    );
+  }
+
+  const preparedFile =
+    file.name && /\.[a-z0-9]+$/i.test(file.name)
+      ? file
+      : new File([file], `${sanitizeAssetStem(fileStem)}.${extensionFromMimeType(file.type)}`, {
+          type: file.type || "application/octet-stream",
+        });
+
+  const formData = new FormData();
+  formData.append("file", preparedFile, preparedFile.name);
+
+  const response = await fetch(runtimeConfig.adminAssetUploadEndpoint, {
+    method: "POST",
+    headers: {
+      "x-admin-token": adminToken,
+    },
+    body: formData,
+  });
+
+  const rawText = await response.text();
+  let result = {};
+
+  try {
+    result = rawText ? JSON.parse(rawText) : {};
+  } catch (error) {
+    result = {};
+  }
+
+  if (!response.ok || !result?.url) {
+    throw new Error(result.message || `이미지 업로드에 실패했습니다. (${response.status})`);
+  }
+
+  return result.url;
+};
+
 const readFileAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -253,7 +347,7 @@ const compressImageSource = async (src, force = false) => {
     return src;
   }
 
-  if (src.startsWith("data:image/gif")) {
+  if (src.startsWith("data:image/gif") || src.startsWith("data:image/svg+xml")) {
     return src;
   }
 
@@ -307,6 +401,48 @@ const optimizeStateImagesForPublish = async (currentState) => {
 
   for (const project of nextState.projects) {
     project.image = await compressImageSource(project.image);
+  }
+
+  return nextState;
+};
+
+const collectImageTargets = (currentState) => [
+  ...currentState.featuredProjects.map((project, index) => ({
+    owner: project,
+    key: "image",
+    label: project.chipTitle || project.title || `featured-${index + 1}`,
+  })),
+  ...currentState.projects.map((project, index) => ({
+    owner: project,
+    key: "image",
+    label: project.title || `project-${index + 1}`,
+  })),
+];
+
+const uploadEmbeddedImagesForPublish = async (currentState, adminToken) => {
+  const nextState = ensureStateShape(clone(currentState));
+  const uploadCache = new Map();
+  const targets = collectImageTargets(nextState).filter(({ owner, key }) => owner[key]?.startsWith("data:image/"));
+
+  for (let index = 0; index < targets.length; index += 1) {
+    const target = targets[index];
+    const source = target.owner[target.key];
+
+    if (uploadCache.has(source)) {
+      target.owner[target.key] = uploadCache.get(source);
+      continue;
+    }
+
+    setStatus(
+      "이미지 업로드 중",
+      `반영용 이미지를 서버 저장소에 올리고 있습니다. ${index + 1}/${targets.length}`,
+    );
+
+    const file = await dataUrlToFile(source, target.label);
+    const uploadedUrl = await uploadAssetFile(file, adminToken, target.label);
+
+    uploadCache.set(source, uploadedUrl);
+    target.owner[target.key] = uploadedUrl;
   }
 
   return nextState;
@@ -366,6 +502,8 @@ const createImageField = ({ label, value, onChange }) => {
   helpElement.className = "form-help";
   helpElement.textContent = "컴퓨터 사진은 업로드 시 자동으로 용량을 줄여 저장합니다. 원본이 크면 몇 초 정도 걸릴 수 있습니다.";
   wrapper.appendChild(helpElement);
+  helpElement.textContent =
+    "컴퓨터 사진은 여기서 미리보기로 들어가고, 공개 사이트 반영할 때 서버에 개별 업로드됩니다. 큰 원본 사진은 이 방식이 더 안정적입니다.";
 
   const preview = document.createElement("div");
   preview.className = "image-preview";
@@ -966,7 +1104,10 @@ const publishToSite = async () => {
     state = ensureStateShape(state);
     renderAll();
 
-    const publishState = await optimizeStateImagesForPublish(state);
+    const optimizedState = await optimizeStateImagesForPublish(state);
+    const publishState = runtimeConfig.adminAssetUploadEndpoint
+      ? await uploadEmbeddedImagesForPublish(optimizedState, adminToken)
+      : optimizedState;
     const payloadJson = JSON.stringify({ data: publishState });
     const payloadBytes = estimateUtf8Bytes(payloadJson);
 
