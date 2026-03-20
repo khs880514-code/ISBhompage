@@ -21,12 +21,8 @@ const runtimeConfig = window.siteRuntimeConfig || {};
 const isLocalFile = window.location.protocol === "file:";
 
 const getBaseSiteData = () => {
-  if (isLocalFile && storage) {
-    return storage.loadSiteData();
-  }
-
   if (storage) {
-    return storage.getDefaultData();
+    return storage.loadSiteData();
   }
 
   return window.defaultSiteData || {};
@@ -525,6 +521,8 @@ const hydrateSiteDataFromServer = async () => {
     } else {
       siteData = remoteData;
     }
+
+    storage?.saveSiteData(siteData);
   } catch (error) {
     // Keep default data when remote loading fails.
   }
@@ -558,11 +556,15 @@ const hydrateRuntimeConfig = async () => {
 };
 
 const initialize = async () => {
-  await hydrateRuntimeConfig();
-  await hydrateSiteDataFromServer();
-  renderPage();
-  initializeContactForm();
-  initializeTurnstile();
+  try {
+    await hydrateRuntimeConfig();
+    await hydrateSiteDataFromServer();
+    renderPage();
+    initializeContactForm();
+    initializeTurnstile();
+  } finally {
+    document.body.classList.remove("page-pending");
+  }
 };
 
 initialize();

@@ -33,6 +33,18 @@ body {
     linear-gradient(180deg, #090a0b 0%, #0d1013 35%, #14191e 100%);
 }
 
+main {
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+
+.page-pending main {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
 body::before {
   content: "";
   position: fixed;
