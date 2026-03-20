@@ -27,7 +27,7 @@ window.defaultSiteData = {
       summary:
         "전시 구조 안전성과 현장 시인성을 함께 보여준 사례입니다. 리깅 구조와 투명 디스플레이를 함께 구성해 공간의 집중도를 높였습니다.",
       tags: ["Structure Review", "Truss Rigging", "G-TLD"],
-      image: "./assets/featured/case-01.jpg",
+      image: "/assets/featured/featured-k-safety-2025.png",
       link: "https://blog.naver.com/e_isb/224106257642?fromRss=true&trackingCode=rss",
     },
     {
@@ -40,7 +40,7 @@ window.defaultSiteData = {
       summary:
         "시야를 막지 않는 투명 LED를 활용해 전시 부스의 개방감과 브랜드 연출을 동시에 확보한 사례입니다.",
       tags: ["Transparent LED", "Media Solution", "Exhibition Tech"],
-      image: "./assets/featured/case-02.gif",
+      image: "/assets/featured/featured-comup-gtld.gif",
       link: "https://blog.naver.com/e_isb/224106041759?fromRss=true&trackingCode=rss",
     },
     {
@@ -53,7 +53,7 @@ window.defaultSiteData = {
       summary:
         "리깅 제한 구역을 고려해 현장 구조를 설계하고, 하부 라이트박스를 함께 구성해 부스의 존재감을 강화한 사례입니다.",
       tags: ["BEXCO", "Lighting Box", "Rigging Limits"],
-      image: "./assets/featured/case-03.jpg",
+      image: "/assets/featured/featured-kormarine-2025.jpg",
       link: "https://blog.naver.com/e_isb/224098212325?fromRss=true&trackingCode=rss",
     },
     {
@@ -66,7 +66,7 @@ window.defaultSiteData = {
       summary:
         "대형 라이트박스 구조를 위해 사전 조립과 현장 설치 효율을 함께 고려한 ISB 운영 방식이 드러나는 사례입니다.",
       tags: ["KINTEX", "Pre-assembly", "Lighting Box"],
-      image: "./assets/featured/case-04.jpg",
+      image: "/assets/featured/featured-seoul-food-2025.jpg",
       link: "https://blog.naver.com/e_isb/223894223541?fromRss=true&trackingCode=rss",
     },
     {
@@ -79,7 +79,7 @@ window.defaultSiteData = {
       summary:
         "조립 속도와 공간 효율이 중요한 현장에서 SYMA 시스템을 활용해 안정적인 복층 구조를 구현한 사례입니다.",
       tags: ["SYMA", "Double Deck", "Fast Assembly"],
-      image: "./assets/featured/case-05.jpg",
+      image: "/assets/featured/featured-semicon-syma.jpg",
       link: "https://blog.naver.com/e_isb/223766170272?fromRss=true&trackingCode=rss",
     },
   ],
