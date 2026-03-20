@@ -14,6 +14,10 @@ const adminTokenInput = document.querySelector("#admin-token");
 const toggleTokenVisibilityButton = document.querySelector("#toggle-token-visibility");
 
 const sessionTokenKey = "isb-admin-token";
+const MAX_IMAGE_DIMENSION = 1800;
+const IMAGE_EXPORT_QUALITY = 0.82;
+const EMBEDDED_IMAGE_RECOMPRESS_THRESHOLD = 320 * 1024;
+const MAX_PUBLISH_PAYLOAD_BYTES = Math.round(4.5 * 1024 * 1024);
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -211,6 +215,99 @@ const markPublished = () => {
   setStatus("공개 사이트 반영 완료", "배포된 사이트 데이터에 저장되었습니다. 홈페이지에서 Ctrl+F5로 새로고침해 확인해주세요.");
 };
 
+const formatBytes = (bytes) => {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return "0KB";
+  }
+
+  if (bytes >= 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+  }
+
+  return `${Math.max(1, Math.round(bytes / 1024))}KB`;
+};
+
+const estimateUtf8Bytes = (value) => {
+  const text = typeof value === "string" ? value : JSON.stringify(value);
+  return new TextEncoder().encode(text).length;
+};
+
+const readFileAsDataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+    reader.onerror = () => reject(new Error("이미지 파일을 읽지 못했습니다."));
+    reader.readAsDataURL(file);
+  });
+
+const loadImageElement = (src) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("이미지를 불러오지 못했습니다."));
+    image.src = src;
+  });
+
+const compressImageSource = async (src, force = false) => {
+  if (!src?.startsWith("data:image/")) {
+    return src;
+  }
+
+  const sourceBytes = estimateUtf8Bytes(src);
+  if (!force && sourceBytes < EMBEDDED_IMAGE_RECOMPRESS_THRESHOLD) {
+    return src;
+  }
+
+  const image = await loadImageElement(src);
+  const longestSide = Math.max(image.naturalWidth || 0, image.naturalHeight || 0) || 1;
+  const scale = Math.min(1, MAX_IMAGE_DIMENSION / longestSide);
+  const width = Math.max(1, Math.round((image.naturalWidth || 1) * scale));
+  const height = Math.max(1, Math.round((image.naturalHeight || 1) * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d", { alpha: false });
+  if (!context) {
+    return src;
+  }
+
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, width, height);
+  context.drawImage(image, 0, 0, width, height);
+
+  let optimized = canvas.toDataURL("image/webp", IMAGE_EXPORT_QUALITY);
+  if (!optimized || optimized === "data:,") {
+    optimized = canvas.toDataURL("image/jpeg", IMAGE_EXPORT_QUALITY);
+  }
+
+  if (!optimized || optimized === "data:,") {
+    return src;
+  }
+
+  const optimizedBytes = estimateUtf8Bytes(optimized);
+  if (!force && optimizedBytes >= sourceBytes) {
+    return src;
+  }
+
+  return optimized;
+};
+
+const optimizeStateImagesForPublish = async (currentState) => {
+  const nextState = ensureStateShape(clone(currentState));
+
+  for (const project of nextState.featuredProjects) {
+    project.image = await compressImageSource(project.image);
+  }
+
+  for (const project of nextState.projects) {
+    project.image = await compressImageSource(project.image);
+  }
+
+  return nextState;
+};
+
 const createField = ({ label, value, type = "text", full = false, onChange, help }) => {
   const wrapper = document.createElement("div");
   wrapper.className = `field${full ? " full" : ""}`;
@@ -261,6 +358,11 @@ const createImageField = ({ label, value, onChange }) => {
   urlInput.placeholder = "이미지 URL 또는 업로드한 데이터";
   wrapper.appendChild(urlInput);
 
+  const helpElement = document.createElement("div");
+  helpElement.className = "form-help";
+  helpElement.textContent = "컴퓨터 사진은 업로드 시 자동으로 용량을 줄여 저장합니다. 원본이 크면 몇 초 정도 걸릴 수 있습니다.";
+  wrapper.appendChild(helpElement);
+
   const preview = document.createElement("div");
   preview.className = "image-preview";
   const previewImage = document.createElement("img");
@@ -284,21 +386,33 @@ const createImageField = ({ label, value, onChange }) => {
   const uploadInput = document.createElement("input");
   uploadInput.type = "file";
   uploadInput.accept = "image/*";
-  uploadInput.addEventListener("change", (event) => {
+  uploadInput.addEventListener("change", async (event) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : "";
-      urlInput.value = result;
-      onChange(result);
-      previewImage.src = result;
+    setStatus("이미지 최적화 중", `${file.name} 파일을 반영용 크기로 정리하고 있습니다.`);
+
+    try {
+      const original = await readFileAsDataUrl(file);
+      const optimized = await compressImageSource(original, true);
+
+      urlInput.value = optimized;
+      onChange(optimized);
+      previewImage.src = optimized;
       markDirty();
-    };
-    reader.readAsDataURL(file);
+      setStatus(
+        "이미지 준비 완료",
+        `${file.name} 이미지를 ${formatBytes(estimateUtf8Bytes(original))}에서 ${formatBytes(
+          estimateUtf8Bytes(optimized),
+        )}로 정리했습니다. 공개 사이트 반영을 눌러주세요.`,
+      );
+    } catch (error) {
+      setStatus("이미지 처리 실패", error.message || "이미지 파일을 처리하지 못했습니다.");
+    } finally {
+      event.target.value = "";
+    }
   });
 
   uploadButton.appendChild(uploadInput);
@@ -835,11 +949,25 @@ const publishToSite = async () => {
   }
 
   publishButton.disabled = true;
-  setStatus("사이트 반영 중", "서버 저장소에 데이터를 업로드하고 있습니다.");
+  setStatus("이미지와 데이터를 점검 중", "업로드한 이미지 크기와 반영 데이터를 정리하고 있습니다.");
 
   try {
     state = ensureStateShape(state);
     renderAll();
+
+    const publishState = await optimizeStateImagesForPublish(state);
+    const payloadJson = JSON.stringify({ data: publishState });
+    const payloadBytes = estimateUtf8Bytes(payloadJson);
+
+    if (payloadBytes > MAX_PUBLISH_PAYLOAD_BYTES) {
+      throw new Error(
+        `업로드한 이미지가 너무 커서 반영할 수 없습니다. 현재 반영 데이터 크기: ${formatBytes(payloadBytes)}. 대표 시공 이미지 수를 줄이거나 더 작은 사진을 사용해주세요.`,
+      );
+    }
+
+    state = ensureStateShape(publishState);
+    renderAll();
+    setStatus("공개 사이트 반영 중", `서버 저장소에 데이터를 업로드하고 있습니다. 현재 크기 ${formatBytes(payloadBytes)}`);
 
     const response = await fetch(runtimeConfig.adminPublishEndpoint, {
       method: "POST",
@@ -847,12 +975,19 @@ const publishToSite = async () => {
         "Content-Type": "application/json",
         "x-admin-token": adminToken,
       },
-      body: JSON.stringify({ data: state }),
+      body: payloadJson,
     });
 
-    const result = await response.json().catch(() => ({}));
+    const rawText = await response.text();
+    let result = {};
+    try {
+      result = rawText ? JSON.parse(rawText) : {};
+    } catch (error) {
+      result = {};
+    }
+
     if (!response.ok) {
-      throw new Error(result.message || "사이트 반영에 실패했습니다.");
+      throw new Error(result.message || `사이트 반영에 실패했습니다. (${response.status})`);
     }
 
     storage?.saveSiteData(state);
