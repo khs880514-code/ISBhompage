@@ -801,6 +801,19 @@ const loadPublishedData = async () => {
 
     const result = await response.json();
     const remoteData = result?.data || result;
+
+    if (storage?.hasLikelyEncodingCorruption?.(remoteData)) {
+      storage?.resetSiteData?.();
+      state = ensureStateShape(storage?.getDefaultData ? storage.getDefaultData() : window.defaultSiteData || {});
+      storage?.saveSiteData(state);
+      renderAll();
+      setStatus(
+        "원격 데이터 복구 필요",
+        "배포 저장소 데이터가 깨져 기본 데이터로 복원했습니다. 토큰을 입력한 뒤 사이트 반영을 다시 눌러 주세요.",
+      );
+      return;
+    }
+
     state = ensureStateShape(remoteData);
     renderAll();
     setStatus("사이트 데이터 로드 완료", "현재 배포된 사이트 데이터를 불러왔습니다.");

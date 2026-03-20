@@ -34,6 +34,38 @@
 
   const getDefaultData = () => clone(window.defaultSiteData || {});
 
+  const collectStrings = (value, bucket = []) => {
+    if (typeof value === "string") {
+      bucket.push(value);
+      return bucket;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((item) => collectStrings(item, bucket));
+      return bucket;
+    }
+
+    if (value && typeof value === "object") {
+      Object.keys(value).forEach((key) => collectStrings(value[key], bucket));
+    }
+
+    return bucket;
+  };
+
+  const hasLikelyEncodingCorruption = (value) => {
+    const text = collectStrings(value).join(" ");
+    if (!text) {
+      return false;
+    }
+
+    const questionMarks = (text.match(/\?/g) || []).length;
+    const replacementChars = (text.match(/\uFFFD/g) || []).length;
+    const suspiciousRuns = (text.match(/\?{3,}/g) || []).length;
+    const signal = questionMarks + replacementChars;
+
+    return suspiciousRuns > 0 || signal >= 12;
+  };
+
   const safeStorage = () => {
     try {
       const testKey = "__isb_test__";
@@ -60,6 +92,11 @@
       }
 
       const parsed = JSON.parse(raw);
+      if (hasLikelyEncodingCorruption(parsed)) {
+        storage.removeItem(STORAGE_KEY);
+        return defaults;
+      }
+
       return mergeData(defaults, parsed);
     } catch (error) {
       return defaults;
@@ -93,6 +130,7 @@
     clone,
     mergeData,
     getDefaultData,
+    hasLikelyEncodingCorruption,
     loadSiteData,
     saveSiteData,
     resetSiteData,

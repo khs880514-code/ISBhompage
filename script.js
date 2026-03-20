@@ -516,6 +516,13 @@ const hydrateSiteDataFromServer = async () => {
     const result = await response.json();
     const remoteData = result?.data || result;
 
+    if (storage?.hasLikelyEncodingCorruption?.(remoteData)) {
+      storage?.resetSiteData?.();
+      siteData = getBaseSiteData();
+      storage?.saveSiteData(siteData);
+      return;
+    }
+
     if (storage?.mergeData) {
       siteData = storage.mergeData(siteData, remoteData);
     } else {
