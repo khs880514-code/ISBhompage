@@ -18,9 +18,12 @@ const MAX_IMAGE_DIMENSION = 2200;
 const IMAGE_EXPORT_QUALITY = 0.9;
 const EMBEDDED_IMAGE_RECOMPRESS_THRESHOLD = 450 * 1024;
 const MAX_PUBLISH_PAYLOAD_BYTES = Math.round(4.5 * 1024 * 1024);
-const MAX_ASSET_UPLOAD_BYTES = Math.round(4.2 * 1024 * 1024);
+const MAX_NETLIFY_ASSET_UPLOAD_BYTES = Math.round(4.2 * 1024 * 1024);
+const MAX_CAFE24_ASSET_UPLOAD_BYTES = Math.round(7 * 1024 * 1024);
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
+const getMaxAssetUploadBytes = () =>
+  runtimeConfig.adminPlatform === "cafe24" ? MAX_CAFE24_ASSET_UPLOAD_BYTES : MAX_NETLIFY_ASSET_UPLOAD_BYTES;
 
 const toObject = (value) => (value && typeof value === "object" && !Array.isArray(value) ? value : {});
 const toStringValue = (value, fallback = "") => (typeof value === "string" ? value : fallback);
@@ -303,6 +306,8 @@ const dataUrlToFile = async (dataUrl, fileStem = "image") => {
 };
 
 const uploadAssetFile = async (file, adminToken, fileStem = "image") => {
+  const maxAssetUploadBytes = getMaxAssetUploadBytes();
+
   if (!runtimeConfig.adminAssetUploadEndpoint) {
     throw new Error("이미지 업로드 경로가 아직 설정되지 않았습니다.");
   }
@@ -311,9 +316,9 @@ const uploadAssetFile = async (file, adminToken, fileStem = "image") => {
     throw new Error("업로드할 이미지 파일을 찾지 못했습니다.");
   }
 
-  if (file.size > MAX_ASSET_UPLOAD_BYTES) {
+  if (file.size > maxAssetUploadBytes) {
     throw new Error(
-      `이미지 한 장이 너무 큽니다. 현재 파일 크기: ${formatBytes(file.size)}. 한 장 기준 ${formatBytes(MAX_ASSET_UPLOAD_BYTES)} 이하 이미지를 사용해주세요.`,
+      `이미지 한 장이 너무 큽니다. 현재 파일 크기: ${formatBytes(file.size)}. 한 장 기준 ${formatBytes(maxAssetUploadBytes)} 이하 이미지를 사용해주세요.`,
     );
   }
 
@@ -352,12 +357,13 @@ const uploadAssetFile = async (file, adminToken, fileStem = "image") => {
 };
 
 const uploadAssetSource = async (dataUrl, adminToken, fileStem = "image") => {
+  const maxAssetUploadBytes = getMaxAssetUploadBytes();
   const binaryBytes = estimateDataUrlBinaryBytes(dataUrl);
 
-  if (binaryBytes > MAX_ASSET_UPLOAD_BYTES) {
+  if (binaryBytes > maxAssetUploadBytes) {
     throw new Error(
       `이미지 한 장이 너무 큽니다. 현재 파일 크기: ${formatBytes(binaryBytes)}. 관리자 업로드는 ${formatBytes(
-        MAX_ASSET_UPLOAD_BYTES,
+        maxAssetUploadBytes,
       )} 안쪽 파일이 가장 안정적입니다. 큰 원본이나 GIF는 정적 파일 경로 방식이 더 적합합니다.`,
     );
   }
@@ -563,10 +569,11 @@ const createImageField = ({ label, value, onChange }) => {
 
   const helpElement = document.createElement("div");
   helpElement.className = "form-help";
-  helpElement.textContent = "컴퓨터 사진은 업로드 시 자동으로 용량을 줄여 저장합니다. 원본이 크면 몇 초 정도 걸릴 수 있습니다.";
-  wrapper.appendChild(helpElement);
   helpElement.textContent =
-    "컴퓨터 사진은 여기서 미리보기로 들어가고, 공개 사이트 반영할 때 서버에 개별 업로드됩니다. 큰 원본 사진은 이 방식이 더 안정적입니다.";
+    runtimeConfig.adminAssetUploadMode === "direct"
+      ? "카페24에서는 관리자 토큰 입력 후 이미지를 선택하면 서버에 바로 업로드되고, 카드에는 파일 경로만 저장됩니다."
+      : "컴퓨터 사진은 여기서 미리보기로 들어가고, 공개 사이트 반영할 때 서버에 개별 업로드됩니다. 큰 원본 사진은 이 방식이 더 안정적입니다.";
+  wrapper.appendChild(helpElement);
 
   const preview = document.createElement("div");
   preview.className = "image-preview";
@@ -597,9 +604,31 @@ const createImageField = ({ label, value, onChange }) => {
       return;
     }
 
-    setStatus("이미지 최적화 중", `${file.name} 파일을 반영용 크기로 정리하고 있습니다.`);
+    setStatus(
+      runtimeConfig.adminAssetUploadMode === "direct" ? "이미지 업로드 준비 중" : "이미지 최적화 중",
+      runtimeConfig.adminAssetUploadMode === "direct"
+        ? `${file.name} 파일을 서버 업로드용으로 준비하고 있습니다.`
+        : `${file.name} 파일을 반영용 크기로 정리하고 있습니다.`,
+    );
 
     try {
+      if (runtimeConfig.adminAssetUploadMode === "direct") {
+        const adminToken = adminTokenInput?.value?.trim();
+
+        if (!adminToken) {
+          throw new Error("이미지를 바로 업로드하려면 먼저 관리자 토큰을 입력해주세요.");
+        }
+
+        const uploadedUrl = await uploadAssetFile(file, adminToken, file.name || label);
+
+        urlInput.value = uploadedUrl;
+        onChange(uploadedUrl);
+        previewImage.src = uploadedUrl;
+        markDirty();
+        setStatus("이미지 업로드 완료", `${file.name} 원본 파일을 서버에 올리고 경로를 연결했습니다.`);
+        return;
+      }
+
       const original = await readFileAsDataUrl(file);
       const optimized = file.type === "image/gif" ? original : await compressImageSource(original);
       const keptOriginal = estimateUtf8Bytes(optimized) >= estimateUtf8Bytes(original);
@@ -620,7 +649,7 @@ const createImageField = ({ label, value, onChange }) => {
                 estimateUtf8Bytes(optimized),
               )}로 정리했습니다. 공개 사이트 반영을 눌러주세요.`,
       );
-      if (file.size > MAX_ASSET_UPLOAD_BYTES) {
+      if (file.size > getMaxAssetUploadBytes()) {
         setStatus(
           "대용량 이미지 안내",
           `${file.name} 파일 크기 ${formatBytes(

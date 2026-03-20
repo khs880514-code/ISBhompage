@@ -16,6 +16,9 @@
 - `admin.html`
 - `admin.css`
 - `admin.js`
+- `studio/`
+- `api/`
+- `storage/`
 - `robots.txt`
 - `sitemap.xml`
 - `.htaccess`
@@ -23,6 +26,10 @@
 
 업로드 위치:
 - 위 파일과 폴더를 모두 `/www` 바로 아래에 업로드
+
+관리자 주소:
+- `https://www.e-isb.com/studio/`
+- 보조 주소로 `https://www.e-isb.com/admin.html` 도 사용 가능
 
 주의:
 - `adm`, `bbs`, `data`, `extend`, `img`, `js`, `lib`, `mobile`, `plugin`, `skin`, `theme` 같은 기존 폴더는 바로 삭제하지 말 것
@@ -37,3 +44,6 @@
 - `.htaccess` 가 `/www/.htaccess` 로 올라갔는지
 - `index.html` 이 `/www/index.html` 인지
 - 이미지 폴더가 `/www/assets/featured/...` 인지
+- PHP API 파일이 `/www/api/...` 에 있는지
+- 관리자 저장 파일이 `/www/storage/site-data.json` 에 있는지
+- 관리자 저장이 안 되면 `/www/storage` 와 `/www/assets/uploads` 의 쓰기 권한을 확인하기
