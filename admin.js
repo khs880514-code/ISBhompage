@@ -200,15 +200,15 @@ const setStatus = (title, detail) => {
 };
 
 const markDirty = () => {
-  setStatus("수정 중", "브라우저 저장 또는 사이트 반영을 진행해주세요.");
+  setStatus("수정 중", "이 PC에만 저장하거나 공개 사이트 반영을 진행해주세요.");
 };
 
 const markDraftSaved = () => {
-  setStatus("브라우저 저장 완료", "현재 브라우저에 임시 저장되었습니다. 공개 사이트 반영은 별도로 진행해주세요.");
+  setStatus("이 PC에만 저장 완료", "현재 브라우저에만 임시 저장되었습니다. 공개 사이트 반영은 별도로 진행해주세요.");
 };
 
 const markPublished = () => {
-  setStatus("사이트 반영 완료", "배포된 사이트 데이터에 저장되었습니다. 홈페이지를 새로고침해 확인해주세요.");
+  setStatus("공개 사이트 반영 완료", "배포된 사이트 데이터에 저장되었습니다. 홈페이지에서 Ctrl+F5로 새로고침해 확인해주세요.");
 };
 
 const createField = ({ label, value, type = "text", full = false, onChange, help }) => {

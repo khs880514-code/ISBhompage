@@ -19,23 +19,39 @@
           <p class="admin-eyebrow">ISB Content Studio</p>
           <h1>홈페이지 관리자</h1>
           <p class="admin-subtitle">
-            이 페이지에서 수정한 내용은 현재 브라우저에 저장되며, 사이트 반영 버튼으로 배포본에도 올릴 수 있습니다.
+            여기서는 문구, 링크, 이미지, 카드 순서를 수정할 수 있습니다. 공개 사이트에 실제 반영하려면 배포된
+            관리자 페이지에서 토큰 입력 후 반영 버튼까지 눌러야 합니다.
           </p>
         </div>
         <div class="admin-actions">
-          <a class="admin-link" href="./index.html" target="_blank" rel="noreferrer">사이트 보기</a>
-          <button class="admin-button ghost" type="button" id="draft-save-button">브라우저 저장</button>
-          <button class="admin-button solid" type="button" id="publish-button">사이트 반영</button>
+          <a class="admin-link" href="./index.html" target="_blank" rel="noreferrer">공개 홈페이지 보기</a>
+          <button class="admin-button ghost" type="button" id="draft-save-button">이 PC에만 저장</button>
+          <button class="admin-button solid" type="button" id="publish-button">공개 사이트 반영</button>
           <button class="admin-button ghost" type="button" id="export-button">JSON 내보내기</button>
           <button class="admin-button ghost" type="button" id="import-button">JSON 가져오기</button>
           <button class="admin-button ghost" type="button" id="reset-button">초기값 복원</button>
         </div>
       </header>
 
+      <section class="admin-guide">
+        <article class="guide-card">
+          <strong>여기서 바로 되는 것</strong>
+          <p>문구, 링크, 이미지 주소, 카드 순서, 소개 문장을 바꾸고 공개 사이트에 반영할 수 있습니다.</p>
+        </article>
+        <article class="guide-card">
+          <strong>코드 수정이 필요한 것</strong>
+          <p>레이아웃, 버튼 위치, 폰트, 색상, 간격, 섹션 구조 같은 디자인 변경은 코드 수정 후 배포가 필요합니다.</p>
+        </article>
+        <article class="guide-card">
+          <strong>반영 순서</strong>
+          <p>1. 내용 수정 2. 토큰 입력 3. 공개 사이트 반영 4. 홈페이지에서 새로고침으로 확인</p>
+        </article>
+      </section>
+
       <div class="admin-status">
         <div class="status-copy">
           <strong id="status-text">편집 가능</strong>
-          <span id="status-detail">변경 후 브라우저 저장 또는 사이트 반영을 진행해주세요.</span>
+          <span id="status-detail">변경 후 이 PC에만 저장 또는 공개 사이트 반영을 진행해주세요.</span>
         </div>
         <div class="status-auth">
           <div class="status-auth-head">

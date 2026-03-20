@@ -128,6 +128,34 @@ body {
   box-shadow: var(--shadow);
 }
 
+.admin-guide {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.guide-card {
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: var(--shadow);
+}
+
+.guide-card strong {
+  display: block;
+  font-size: 0.96rem;
+  letter-spacing: -0.02em;
+}
+
+.guide-card p {
+  margin: 10px 0 0;
+  color: var(--text-soft);
+  line-height: 1.72;
+  font-size: 0.94rem;
+}
+
 .status-copy {
   display: flex;
   flex-direction: column;
@@ -367,6 +395,10 @@ body {
   .panel-heading,
   .subpanel-head {
     flex-direction: column;
+  }
+
+  .admin-guide {
+    grid-template-columns: 1fr;
   }
 
   .admin-grid,
