@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>MSB 업무용 부스, LED 배너 제품 안내</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+  /* 재단 여백(bleed). build.mjs 가 A4 출력용은 0mm 로 바꿔서 뽑습니다. */
+  :root {
+    --b: 3mm;
+    --ink: #1d2023;
+    --ink-2: #565b60;
+    --ink-3: #868b90;
+    --felt: #ecebe7;
+    --graphite: #24282c;
+    --brass: #9c7a4a;
+    --brass-light: #d0ae78;
+    --m: 16mm; /* 바깥 여백 */
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Wanted Sans", sans-serif;
+    color: var(--ink);
+    font-size: 9.4pt;
+    line-height: 1.72;
+    letter-spacing: -0.005em;
+    word-break: keep-all;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  p, h1, h2, h3, figure { margin: 0; }
+  p { text-wrap: pretty; }
+  img { display: block; }
+
+  .page {
+    position: relative;
+    width: calc(210mm + 2 * var(--b));
+    height: calc(297mm + 2 * var(--b));
+    overflow: hidden;
+    break-after: page;
+    background: #fff;
+  }
+  .page:last-child { break-after: auto; }
+  .trim { position: absolute; left: var(--b); top: var(--b); width: 210mm; height: 297mm; }
+  /* 재단선 밖까지 채우는 요소 */
+  .bleed-x { position: absolute; left: calc(-1 * var(--b)); right: calc(-1 * var(--b)); }
+
+  .folio {
+    position: absolute; left: var(--m); right: var(--m); bottom: 11mm;
+    display: flex; justify-content: space-between;
+    font-size: 7pt; color: var(--ink-3); letter-spacing: 0;
+  }
+  .caption { font-size: 7.2pt; line-height: 1.5; color: var(--ink-3); }
+
+  h2 { font-size: 23pt; line-height: 1.24; font-weight: 800; letter-spacing: -0.03em; }
+  .body p + p { margin-top: 3.2mm; }
+
+  /* ---------- 1. 표지 ---------- */
+  .cover .masthead {
+    position: absolute; top: 15mm; left: var(--m); right: var(--m);
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .brand { font-size: 15pt; font-weight: 800; letter-spacing: -0.02em; }
+  .brand small { font-size: 8pt; font-weight: 600; margin-left: 1.6mm; color: var(--ink-2); letter-spacing: 0; }
+  .issue { font-size: 8pt; color: var(--ink-2); }
+  .cover h1 {
+    position: absolute; top: 38mm; left: calc(var(--m) - 1.2mm);
+    font-size: 62pt; line-height: 1.08; font-weight: 800; letter-spacing: -0.045em;
+  }
+  .cover .lede {
+    position: absolute; top: 89mm; left: var(--m);
+    font-size: 11pt; line-height: 1.5; color: var(--ink-2); font-weight: 500;
+  }
+  .cover .photo {
+    top: 108mm; bottom: calc(-1 * var(--b));
+  }
+  .cover .photo img { width: 100%; height: 100%; object-fit: cover; object-position: 2% 50%; }
+  .cover .call {
+    position: absolute; right: var(--m); top: 89mm; text-align: right;
+    font-size: 11pt; line-height: 1.5; font-weight: 700;
+  }
+  .cover .call span { font-weight: 500; color: var(--ink-2); margin-right: 2mm; }
+
+  /* ---------- 2·3. 제품 페이지 공통 ---------- */
+  .hero { top: calc(-1 * var(--b)); height: calc(124mm + var(--b)); }
+  .hero img { width: 100%; height: 100%; object-fit: cover; }
+  .hero-caption { position: absolute; top: 126.5mm; right: var(--m); text-align: right; }
+  .product h2 { position: absolute; top: 137mm; left: var(--m); width: 178mm; }
+  .cols {
+    position: absolute; top: 166mm; left: var(--m); right: var(--m);
+    display: grid; grid-template-columns: 98mm 1fr; column-gap: 10mm;
+  }
+
+  /* 2. MSB */
+  .msb .hero img { object-position: 50% 62%; }
+  .side-photo img { width: 100%; height: 47mm; object-fit: cover; object-position: 40% 60%; }
+  .side-photo .caption { margin-top: 1.8mm; }
+  .lineup {
+    top: 226mm; height: 40mm; background: var(--felt);
+    padding: 7mm calc(var(--m) + var(--b)) 0;
+  }
+  .lineup-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .lineup-head strong { font-size: 9pt; font-weight: 700; }
+  .lineup-head span { font-size: 7.6pt; color: var(--ink-2); }
+  .models {
+    display: flex; justify-content: space-between;
+    margin-top: 4mm; border-top: 0.3mm solid #cfccc5;
+  }
+  .models span {
+    font-size: 30pt; line-height: 1; font-weight: 700; letter-spacing: -0.02em;
+    padding-top: 4.5mm;
+  }
+  .msb .note { position: absolute; top: 272mm; left: var(--m); right: var(--m); }
+
+  /* 3. LED 배너 */
+  .led .hero { background: var(--felt); }
+  .led .hero img {
+    position: absolute; width: auto; height: 108mm;
+    left: 50%; transform: translateX(-38%); bottom: 6mm;
+  }
+  .screen-note { position: absolute; top: 109mm; left: var(--m); width: 50mm; }
+  .uses { border-top: 0.3mm solid var(--ink); }
+  .uses h3 { font-size: 8pt; font-weight: 700; padding: 2.4mm 0 0; color: var(--ink-2); }
+  .uses dl { margin: 0; }
+  .uses dt { font-size: 11pt; font-weight: 700; margin-top: 3.4mm; }
+  .uses dd { margin: 0.6mm 0 0; color: var(--ink-2); }
+  .checklist { display: flex; justify-content: space-between; margin-top: 4mm; border-top: 0.3mm solid #cfccc5; }
+  .checklist span { font-size: 15pt; font-weight: 700; letter-spacing: -0.02em; padding-top: 5mm; }
+  .led .note { position: absolute; top: 272mm; left: var(--m); right: var(--m); }
+
+  /* ---------- 4. 뒷면 ---------- */
+  .back h2 { position: absolute; top: 18mm; left: var(--m); }
+  table.uses-table {
+    position: absolute; top: 38mm; left: var(--m); width: 178mm;
+    border-collapse: collapse; font-size: 9pt;
+  }
+  .uses-table th {
+    text-align: left; font-weight: 600; font-size: 7.6pt; color: var(--ink-2);
+    padding: 0 0 2mm; border-bottom: 0.35mm solid var(--ink);
+  }
+  .uses-table td { padding: 4.2mm 4mm 4.2mm 0; border-bottom: 0.2mm solid #d6d3cd; vertical-align: top; }
+  .uses-table td:first-child { font-weight: 700; width: 50mm; }
+  .uses-table td:nth-child(2) { width: 66mm; }
+  .back .table-note { position: absolute; top: 104mm; left: var(--m); }
+
+  .steps-title { position: absolute; top: 124mm; left: var(--m); font-size: 14pt; font-weight: 800; letter-spacing: -0.02em; }
+  .steps {
+    position: absolute; top: 136mm; left: var(--m); right: var(--m);
+    display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 8mm;
+    list-style: none; margin: 0; padding: 0;
+  }
+  .steps li { border-top: 0.35mm solid var(--ink); padding-top: 3mm; }
+  .steps b { display: block; font-size: 22pt; line-height: 1; font-weight: 700; color: var(--brass); }
+  .steps strong { display: block; font-size: 10.5pt; margin: 3mm 0 1.4mm; }
+  .steps p { color: var(--ink-2); font-size: 8.8pt; line-height: 1.6; }
+
+  .contact {
+    top: 186mm; bottom: calc(-1 * var(--b));
+    background: var(--graphite); color: #f1ece3;
+    padding: 14mm calc(var(--m) + var(--b)) 0;
+  }
+  .contact .label { font-size: 8.4pt; color: #b9b3a8; }
+  .phone { font-size: 36pt; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; color: var(--brass-light); margin-top: 1.5mm; }
+  .contact .lines { margin-top: 6mm; font-size: 10pt; line-height: 1.85; }
+  .contact .lines span { display: inline-block; width: 17mm; color: #b9b3a8; font-size: 8.4pt; }
+  .qr {
+    position: absolute; top: 14mm; right: calc(var(--m) + var(--b));
+    width: 40mm; text-align: center;
+  }
+  .qr .code { background: #fff; padding: 3.2mm; width: 31mm; margin-left: auto; }
+  .qr .code img { width: 100%; height: auto; }
+  .qr p { font-size: 7.4pt; line-height: 1.5; color: #b9b3a8; margin-top: 2.4mm; text-align: right; }
+  .company {
+    position: absolute; left: calc(var(--m) + var(--b)); right: calc(var(--m) + var(--b)); bottom: calc(12mm + var(--b));
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-top: 0.2mm solid #4a4f54; padding-top: 3.4mm;
+    font-size: 7.6pt; color: #b9b3a8;
+  }
+  .company strong { font-size: 10pt; color: #f1ece3; font-weight: 700; margin-right: 2mm; }
+  .company p { max-width: 130mm; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<!-- 1. 표지 -->
+<section class="page cover">
+  <div class="trim">
+    <header class="masthead">
+      <span class="brand">MSB<small>by ISB</small></span>
+      <span class="issue">2026년 10월 제품 안내</span>
+    </header>
+    <h1>사무실 안에<br>방 하나 더</h1>
+    <p class="lede">업무용 부스 MSB와<br>실내용 접이식 LED 배너를 소개합니다.</p>
+    <p class="call"><span>상담</span>02-525-3711</p>
+    <figure class="bleed-x photo">
+      <img src="img/source/pod-1seat-sunlight.jpg" alt="창가 사무 공간에 놓인 1인용 업무 부스">
+    </figure>
+  </div>
+</section>
+
+<!-- 2. MSB 업무용 부스 -->
+<section class="page product msb">
+  <div class="trim">
+    <figure class="bleed-x hero">
+      <img src="img/source/pod-meeting-lounge.jpg" alt="라운지에 놓인 미팅용 ARS POD">
+    </figure>
+    <p class="caption hero-caption">여럿이 둘러앉는 미팅용 부스</p>
+
+    <h2>전화 받으러<br>복도에 나가지 않아도 됩니다</h2>
+
+    <div class="cols">
+      <div class="body">
+        <p>MSB는 사무실 바닥에 세워 두고 쓰는 업무용 부스입니다. 문을 닫고 들어가 전화를 받거나 화상회의를 합니다. 찾아온 손님과 잠깐 상담할 때도 씁니다. 회의실을 잡기엔 짧고 자리에서 하기엔 주변이 신경 쓰이는 일이 생각보다 많습니다.</p>
+        <p>제품은 ARS POD 제품군에서 고릅니다. 혼자 들어가는 작은 부스부터 여럿이 둘러앉는 미팅용까지 여섯 가지 모델이 있습니다. 부스는 부피가 커서 엘리베이터와 출입문 크기, 놓을 자리의 넓이와 천장 높이를 먼저 확인하고 모델을 정합니다.</p>
+      </div>
+      <figure class="side-photo">
+        <img src="img/source/pod-2seat-office.jpg" alt="사무실 한쪽에 놓인 2인용 부스">
+        <figcaption class="caption">둘이 쓰는 크기</figcaption>
+      </figure>
+    </div>
+
+    <div class="bleed-x lineup">
+      <div class="lineup-head">
+        <strong>ARS POD 모델</strong>
+        <span>모델별 크기와 내부 구성은 상담 때 자세히 안내합니다.</span>
+      </div>
+      <div class="models"><span>S</span><span>SM</span><span>M</span><span>M2</span><span>ML</span><span>L</span></div>
+    </div>
+
+    <p class="caption note">사진은 제조사 제공 이미지입니다. 마감재와 가구, 세부 구성은 모델과 공급 조건에 따라 달라집니다.</p>
+    <footer class="folio"><span>MSB by ISB</span><span>2</span></footer>
+  </div>
+</section>
+
+<!-- 3. LED 배너 -->
+<section class="page product led">
+  <div class="trim">
+    <figure class="bleed-x hero">
+      <img src="img/led-banners-alpha.png" alt="접은 상태와 펼친 상태의 실내용 LED 배너">
+    </figure>
+    <p class="caption screen-note">화면 속 내용은 예시입니다.<br>제품 이미지는 AOWE 공급사 제공.</p>
+
+    <h2>X배너 자리에<br>세우는 LED 화면</h2>
+
+    <div class="cols">
+      <div class="body">
+        <p>실내용 접이식 LED 배너는 입구나 로비에 세워 두고 안내 문구나 영상을 띄우는 화면입니다. 종이 배너는 내용이 바뀔 때마다 새로 출력해야 하지만 LED 배너는 화면만 바꾸면 됩니다. 행사 일정이나 방문 안내처럼 자주 바뀌는 내용에 잘 맞습니다.</p>
+        <p>화면은 접어서 보관합니다. 받침대에 바퀴가 달려 있어 행사 때 자리를 옮기기도 쉽습니다. 어디에 어떤 높이로 둬야 잘 보이는지는 설치 전에 현장에서 같이 봐 드립니다.</p>
+      </div>
+      <div class="uses">
+        <h3>놓기 좋은 곳</h3>
+        <dl>
+          <dt>입구와 로비</dt>
+          <dd>행사 일정, 방문 안내, 사내 소식</dd>
+          <dt>매장, 쇼룸, 전시장</dt>
+          <dd>브랜드 영상, 상품 소개</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="bleed-x lineup">
+      <div class="lineup-head">
+        <strong>모델과 수량을 정한 뒤 안내하는 항목</strong>
+        <span>공급 구성에 따라 달라집니다.</span>
+      </div>
+      <div class="checklist"><span>화면 크기</span><span>해상도</span><span>제어 방식</span><span>전원</span><span>납기</span></div>
+    </div>
+
+    <p class="caption note">사진 속 마감과 색상은 실제 제품과 다를 수 있습니다.</p>
+    <footer class="folio"><span>MSB by ISB</span><span>3</span></footer>
+  </div>
+</section>
+
+<!-- 4. 뒷면: 활용 예, 상담 -->
+<section class="page back">
+  <div class="trim">
+    <h2>공간별로 이렇게 씁니다</h2>
+    <table class="uses-table">
+      <thead><tr><th>공간</th><th>MSB 부스</th><th>LED 배너</th></tr></thead>
+      <tbody>
+        <tr><td>기업, IT 오피스</td><td>통화, 화상회의, 소규모 미팅</td><td>방문 안내, 사내 소식</td></tr>
+        <tr><td>호텔, 공유오피스</td><td>업무 공간, 상담 공간</td><td>시설 안내, 행사 일정</td></tr>
+        <tr><td>제조, 연구 사업장</td><td>현장 사무 구역의 미팅</td><td>방문 동선 안내, 전시 콘텐츠</td></tr>
+        <tr><td>설계, 가구, 공간 파트너</td><td>고객 공간에 들어갈 부스 구성</td><td>쇼룸과 고객사 안내 화면</td></tr>
+      </tbody>
+    </table>
+    <p class="caption table-note">활용 예시입니다. 실제 구성은 현장 여건과 쓰임에 맞춰 정합니다.</p>
+
+    <h3 class="steps-title">상담은 이렇게 진행합니다</h3>
+    <ol class="steps">
+      <li><b>1</b><strong>사진 보내기</strong><p>놓을 자리 사진과 쓰실 용도, 원하는 일정을 알려주세요.</p></li>
+      <li><b>2</b><strong>모델 고르기</strong><p>공간과 반입 동선을 보고 맞는 모델과 구성을 제안합니다.</p></li>
+      <li><b>3</b><strong>사양과 납기 확정</strong><p>사양과 납기, 견적을 정리해 보내드립니다.</p></li>
+    </ol>
+
+    <div class="bleed-x contact">
+      <p class="label">전화 상담</p>
+      <p class="phone">02-525-3711</p>
+      <p class="lines">
+        <span>메일</span>ahn@e-isb.com<br>
+        <span>홈페이지</span>www.e-isb.com/contact
+      </p>
+      <div class="qr">
+        <div class="code"><img src="img/qr-contact.svg" alt="문의 페이지 QR 코드"></div>
+        <p>휴대폰 카메라로 찍으면<br>문의 페이지가 열립니다.</p>
+      </div>
+      <div class="company">
+        <p><strong>ISB</strong>인터내셔날 서비스 비지니스<br>KINTEX, BEXCO 같은 전시장에서 트러스 구조물과 투명 LED를 설치해 온 회사입니다.</p>
+        <span>MSB by ISB</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+/* Wanted Sans (SIL OFL 1.1) — scripts/build.mjs가 없으면 npm에서 받아 fonts/ 에 넣습니다 */
+@font-face { font-family: "Wanted Sans"; font-weight: 400; src: url("../fonts/WantedSans-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Wanted Sans"; font-weight: 500; src: url("../fonts/WantedSans-Medium.ttf") format("truetype"); }
+@font-face { font-family: "Wanted Sans"; font-weight: 600; src: url("../fonts/WantedSans-SemiBold.ttf") format("truetype"); }
+@font-face { font-family: "Wanted Sans"; font-weight: 700; src: url("../fonts/WantedSans-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Wanted Sans"; font-weight: 800; src: url("../fonts/WantedSans-ExtraBold.ttf") format("truetype"); }
