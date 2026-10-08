@@ -1,0 +1,22 @@
+html, body { margin: 0; }
+body { overflow: hidden; position: relative; font-family: "Wanted Sans", sans-serif; box-sizing: border-box; }
+/* 안내판(왼쪽 배너): 밝은 황동색 화면 */
+.sign {
+  width: 840px; height: 1880px; padding: 120px 84px; color: #1a1d20;
+  background: linear-gradient(165deg, #f1dcb0 0%, #e0b878 48%, #c98f50 100%);
+}
+.sign .hello { font-size: 124px; font-weight: 900; line-height: 1.06; letter-spacing: -0.04em; margin: 0; }
+.sign .rule { width: 120px; height: 10px; background: #1a1d20; margin: 72px 0 60px; }
+.sign .label { font-size: 44px; font-weight: 700; margin: 0 0 22px; opacity: .72; }
+.sign .item { font-size: 60px; font-weight: 800; line-height: 1.25; margin: 0; }
+.sign .item small { display: block; font-size: 42px; font-weight: 600; margin-top: 8px; }
+.sign .gap { height: 54px; }
+/* 사진 화면(오른쪽 배너) */
+.photo-screen { width: 760px; height: 3080px; color: #fff; background: #2a2622; }
+.photo-screen .photo { position: absolute; inset: 0 0 auto 0; height: 2100px; background-size: auto 100%; background-repeat: no-repeat; }
+.photo-screen .photo::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(42,38,34,0) 62%, rgba(42,38,34,.95) 100%); }
+.photo-screen .text { position: absolute; left: 70px; right: 60px; top: 1640px; }
+.photo-screen h1 { font-size: 108px; font-weight: 900; line-height: 1.08; letter-spacing: -0.035em; margin: 0 0 34px; }
+.photo-screen p { font-size: 50px; font-weight: 600; line-height: 1.4; margin: 0; color: #f1e6d4; }
+.photo-screen .big { position: absolute; left: 66px; top: 2240px; font-size: 190px; font-weight: 900; color: #e5c48c; letter-spacing: -0.03em; }
